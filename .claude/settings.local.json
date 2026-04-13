@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod 644 vue_admin_backup.sql vue_admin_backup.sql.bak)"
+    ]
+  }
+}

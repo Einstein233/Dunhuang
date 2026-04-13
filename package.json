@@ -1,0 +1,19 @@
+{
+  "name": "dh-web",
+  "version": "1.0.0",
+  "description": "敦煌项目 - 一键启动所有服务",
+  "scripts": {
+    "start": "node start-all.js"
+  },
+  "dependencies": {
+    "mysql": "^2.18.1",
+    "mysql2": "^3.16.0"
+  },
+  "keywords": [
+    "dunhuang",
+    "visualization",
+    "startup"
+  ],
+  "author": "",
+  "license": "MIT"
+}

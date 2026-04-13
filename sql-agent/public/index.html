@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>敦煌智能体 - 前端 Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .chat-box {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      overflow: hidden;
+      height: 85vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .messages {
+      height: 100%;
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: #f8f9fa;
+    }
+
+    .message {
+      margin-bottom: 15px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      max-width: 90%;
+      word-wrap: break-word;
+    }
+
+    .message.user {
+      background: #667eea;
+      color: white;
+      margin-left: auto;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.assistant {
+      background: white;
+      color: #333;
+      border: 1px solid #e0e0e0;
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.error {
+      background: #fee;
+      color: #c00;
+      border: 1px solid #fcc;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 20px;
+      background: white;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    #messageInput {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 24px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    #messageInput:focus {
+      border-color: #667eea;
+    }
+
+    #sendBtn {
+      margin-left: 12px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 24px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    #sendBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    #sendBtn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #clearBtn {
+      margin-left: 8px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+      color: white;
+      border: none;
+      border-radius: 24px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    #clearBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+    }
+
+    #clearBtn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status {
+      text-align: center;
+      padding: 10px;
+      background: #fff;
+      color: #666;
+      font-size: 14px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .status.connected {
+      color: #28a745;
+    }
+
+    .status.disconnected {
+      color: #dc3545;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* 表格样式 */
+    .table-container {
+      margin-top: 10px;
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .data-table th,
+    .data-table td {
+      padding: 8px 12px;
+      border: 1px solid #e0e0e0;
+      text-align: left;
+    }
+
+    .data-table th {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+
+    .data-table tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+
+    .data-table tr:hover {
+      background-color: #e9ecef;
+    }
+
+    .table-caption {
+      font-size: 12px;
+      color: #666;
+      margin-top: 5px;
+      text-align: right;
+    }
+
+    /* 图表容器样式 */
+    .chart-container {
+      margin-top: 15px;
+      background: #fff;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .chart {
+      width: 100%;
+      height: 450px;
+    }
+
+    /* 消息内的文本段落 */
+    .message p {
+      margin: 8px 0;
+      line-height: 1.6;
+    }
+
+    /* 消息内容样式（Markdown 渲染） */
+    .message-content {
+      line-height: 1.6;
+    }
+
+    .message-content h1,
+    .message-content h2,
+    .message-content h3 {
+      margin: 12px 0 8px 0;
+      font-weight: 600;
+    }
+
+    .message-content h1 { font-size: 1.4em; }
+    .message-content h2 { font-size: 1.2em; }
+    .message-content h3 { font-size: 1.1em; }
+
+    .message-content ul,
+    .message-content ol {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+
+    .message-content code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.9em;
+    }
+
+    .message-content pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+
+    .message-content blockquote {
+      border-left: 4px solid #667eea;
+      padding-left: 12px;
+      margin: 10px 0;
+      color: #555;
+      background: #f8f9fa;
+      padding: 8px 12px;
+      border-radius: 4px;
+    }
+
+    /* 滚动条美化 */
+    .messages::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .messages::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+
+    .messages::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 4px;
+    }
+
+    .messages::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+
+    /* SQL 代码块样式 */
+    .sql-block {
+      margin: 10px 0;
+      background: #1e1e1e;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .sql-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 12px;
+      background: #2d2d2d;
+      color: #ccc;
+      font-size: 12px;
+    }
+
+    .sql-header-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sql-copy-btn {
+      padding: 4px 10px;
+      background: #4a9eff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .sql-copy-btn:hover {
+      background: #3a8eef;
+    }
+
+    .sql-code {
+      padding: 12px 16px;
+      color: #d4d4d4;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.5;
+    }
+
+    /* 思考过程样式 */
+    .thinking-block {
+      margin: 10px 0;
+      padding: 12px 16px;
+      background: #f0f4ff;
+      border-left: 4px solid #667eea;
+      border-radius: 4px;
+    }
+
+    .thinking-title {
+      font-weight: 600;
+      color: #667eea;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .thinking-content {
+      color: #555;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    /* 流式思考过程容器 */
+    .thinking-stream {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .thinking-step {
+      font-size: 12px;
+      color: #888;
+      padding: 4px 8px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .thinking-step::before {
+      content: '💭';
+      font-size: 10px;
+    }
+
+    .thinking-step.thinking {
+      color: #667eea;
+      background: #e8edff;
+    }
+
+    .thinking-step.thinking::before {
+      content: '🧠';
+    }
+
+    .thinking-step.tool {
+      color: #28a745;
+      background: #e8f5e9;
+    }
+
+    .thinking-step.tool::before {
+      content: '🔧';
+    }
+
+    /* 最终回答容器 */
+    .final-answer {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    /* SQL 容器（折叠面板） */
+    .sql-container {
+      margin-bottom: 10px;
+    }
+
+    /* 文本回复容器 */
+    .final-text-container {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    /* 数据可视化容器（表格、图表） */
+    .artifacts-container {
+      margin-top: 10px;
+    }
+
+    /* 流式文本光标效果 */
+    .streaming-text::after {
+      content: '|';
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* 工具调用日志 */
+    .tool-log {
+      font-size: 11px;
+      color: #666;
+      padding: 2px 8px;
+      font-family: monospace;
+    }
+
+    /* 折叠面板样式 */
+    .collapse-panel {
+      margin: 10px 0;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .collapse-header {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .collapse-header:hover {
+      background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+    }
+
+    .collapse-icon {
+      margin-right: 10px;
+      font-size: 16px;
+      transition: transform 0.3s;
+    }
+
+    .collapse-icon.expanded {
+      transform: rotate(90deg);
+    }
+
+    .collapse-title {
+      font-weight: 600;
+      font-size: 14px;
+      flex: 1;
+    }
+
+    .collapse-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+      background: #f8f9fa;
+    }
+
+    .collapse-content.expanded {
+      max-height: 2000px;
+      overflow: auto;
+    }
+
+    .collapse-body {
+      padding: 16px;
+    }
+  </style>
+  <!-- 引入 ECharts -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <!-- 引入 marked 解析 Markdown -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 敦煌智能体</h1>
+
+    <div class="chat-box">
+      <div class="messages" id="messages">
+        <div class="message assistant">
+          你好！我是敦煌智能体，请问有什么可以帮您的？
+        </div>
+      </div>
+
+      <div class="status" id="status">
+        正在连接服务器...
+      </div>
+
+      <div class="input-area">
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="请输入您的问题..."
+          onkeypress="handleKeyPress(event)"
+        />
+        <button id="sendBtn" onclick="sendMessage()">发送</button>
+        <button id="clearBtn" onclick="clearChat()" style="margin-left: 8px; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);">清空对话</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    const API_URL = `${API_BASE}/api/chat`;
+    const API_URL_STREAM = `${API_BASE}/api/chat/stream`;
+    const messagesDiv = document.getElementById('messages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const statusDiv = document.getElementById('status');
+
+    // 当前流式请求的状态（状态机）
+    let currentStreamState = {
+      messageDiv: null,           // 最外层消息气泡
+      thinkingContainer: null,    // 思考过程容器（顶部）
+      currentTextBlock: null,     // 当前正在输出文字的 DOM 节点
+      textBuffer: '',             // 当前文本块的 Markdown 缓冲
+      thinkingSteps: [],
+      tableData: null,
+      chartData: null,
+      sqlData: [],
+      timestamp: null
+    };
+
+    // 检查服务器连接状态
+    async function checkConnection() {
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: '你好' })
+        });
+
+        if (response.ok) {
+          statusDiv.textContent = '服务器已连接';
+          statusDiv.className = 'status connected';
+        } else {
+          throw new Error('服务器响应异常');
+        }
+      } catch (error) {
+        statusDiv.textContent = `服务器未连接，请确保 Agent 服务已启动 (${API_BASE})`;
+        statusDiv.className = 'status disconnected';
+      }
+    }
+
+    // 添加消息到聊天框
+    function addMessage(text, type, tableData = null, chartData = null, sqlData = null) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${type}`;
+
+      let html = '';
+
+      // 渲染助手回复（使用 marked 解析 Markdown）
+      if (type === 'assistant') {
+        let cleanedText = text;
+        // 移除文本中的 JSON 图表配置代码块
+        cleanedText = cleanedText.replace(/```json\s*[\s\S]*?```/g, (match) => {
+          if (match.match(/(xAxis|yAxis|series|echarts)/i)) {
+            return '';
+          }
+          return match;
+        });
+        const parsedText = marked.parse(cleanedText);
+        html += `<div class="message-content">${parsedText}</div>`;
+      } else {
+        html += `<div>${text}</div>`;
+      }
+
+      // 渲染表格数据（直接显示，不折叠）
+      if (tableData && type === 'assistant') {
+        html += `<div class="table-container">`;
+        html += `<table class="data-table">`;
+        html += `<thead><tr>`;
+        tableData.columns.forEach(col => {
+          html += `<th>${escapeHtml(col)}</th>`;
+        });
+        html += `</tr></thead><tbody>`;
+        tableData.rows.forEach(row => {
+          html += `<tr>`;
+          row.forEach(cell => {
+            html += `<td>${escapeHtml(String(cell))}</td>`;
+          });
+          html += `</tr>`;
+        });
+        html += `</tbody></table></div>`;
+        html += `<div class="table-caption">共 ${tableData.rows.length} 条数据</div>`;
+      }
+
+      // 渲染图表（直接显示，不折叠）
+      if (chartData && type === 'assistant' && !chartData.error) {
+        const chartDivId = `chart-${Date.now()}`;
+        html += `<div class="chart-container">`;
+        html += `<div id="${chartDivId}" class="chart"></div>`;
+        html += `</div>`;
+      }
+
+      // 只有 SQL 语句放到折叠面板中
+      if (sqlData && sqlData.length > 0 && type === 'assistant') {
+        const collapseId = `collapse-${Date.now()}`;
+        html += `<div class="collapse-panel">`;
+        html += `<div class="collapse-header" onclick="toggleCollapse('${collapseId}')">`;
+        html += `<span class="collapse-icon" id="${collapseId}-icon">▶</span>`;
+        html += `<span class="collapse-title">📝 查看执行的 SQL 语句</span>`;
+        html += `</div>`;
+        html += `<div class="collapse-content" id="${collapseId}">`;
+        html += `<div class="collapse-body">`;
+
+        sqlData.forEach((sql, index) => {
+          html += `<div class="sql-block">`;
+          html += `<div class="sql-header">`;
+          html += `<div class="sql-header-title">SQL 语句 #${index + 1}</div>`;
+          html += `<button class="sql-copy-btn" onclick="copySQL(this)">复制</button>`;
+          html += `</div>`;
+          html += `<pre class="sql-code">${escapeHtml(sql)}</pre>`;
+          html += `</div>`;
+        });
+
+        html += `</div>`;
+        html += `</div>`;
+        html += `</div>`;
+      }
+
+      messageDiv.innerHTML = html;
+      messagesDiv.appendChild(messageDiv);
+
+      // 初始化图表
+      if (chartData && type === 'assistant' && !chartData.error) {
+        setTimeout(() => {
+          const chartElement = messageDiv.querySelector('.chart');
+          if (chartElement) {
+            const chart = echarts.init(chartElement);
+            chart.setOption(chartData);
+            window.addEventListener('resize', () => {
+              chart.resize();
+            });
+          }
+        }, 100);
+      }
+
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    // HTML 转义，防止 XSS
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ==========================================
+    // SSE 流式输出相关函数
+    // ==========================================
+
+    /**
+     * 创建流式消息容器（只创建基础结构）
+     */
+    function createStreamingMessageContainer() {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message assistant';
+
+      const timestamp = Date.now().toString();
+
+      // 思考过程区域（顶部，小字体）
+      const thinkingContainer = document.createElement('div');
+      thinkingContainer.className = 'thinking-stream';
+      thinkingContainer.id = `thinking-${timestamp}`;
+
+      // 按顺序添加到消息容器
+      messageDiv.appendChild(thinkingContainer);
+      messagesDiv.appendChild(messageDiv);
+
+      // 更新全局状态
+      currentStreamState.timestamp = timestamp;
+      currentStreamState.thinkingContainer = thinkingContainer;
+      currentStreamState.messageDiv = messageDiv;
+      currentStreamState.currentTextBlock = null;
+      currentStreamState.textBuffer = '';
+
+      return { messageDiv, thinkingContainer };
+    }
+
+    /**
+     * 添加思考步骤到思考区域
+     */
+    function addThinkingStep(text, type = 'thinking') {
+      const container = document.getElementById(`thinking-${currentStreamState.thinkingContainer?.id?.split('-')[1]}`);
+      if (!container) return;
+
+      const step = document.createElement('div');
+      step.className = `thinking-step ${type}`;
+      step.textContent = text;
+      container.appendChild(step);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    /**
+     * 封口当前文本块（打断文本流，为插入图表/表格腾出空间）
+     */
+    function sealCurrentTextBlock() {
+      if (currentStreamState.currentTextBlock) {
+        // 移除流式光标
+        currentStreamState.currentTextBlock.classList.remove('streaming-text');
+        // 清空当前文本块状态
+        currentStreamState.currentTextBlock = null;
+        currentStreamState.textBuffer = '';
+      }
+    }
+
+    /**
+     * 更新最终答案文本（流式累积，动态创建文本块）
+     */
+    function appendToFinalAnswer(text) {
+      const messageDiv = currentStreamState.messageDiv;
+      if (!messageDiv) return;
+
+      // 如果当前没有文本块，创建一个新的
+      if (!currentStreamState.currentTextBlock) {
+        const textBlock = document.createElement('div');
+        textBlock.className = 'message-content streaming-text';
+        messageDiv.appendChild(textBlock);
+        currentStreamState.currentTextBlock = textBlock;
+      }
+
+      // 追加文本到缓冲区
+      currentStreamState.textBuffer += text;
+
+      // 实时解析 Markdown 并更新
+      const parsedText = marked.parse(currentStreamState.textBuffer);
+      currentStreamState.currentTextBlock.innerHTML = parsedText;
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    /**
+     * 渲染表格数据（打断当前文本流）
+     */
+    function renderTable(tableData) {
+      const messageDiv = currentStreamState.messageDiv;
+      if (!messageDiv) return;
+
+      // 【关键】先封口当前文本块
+      sealCurrentTextBlock();
+
+      const tableDiv = document.createElement('div');
+      tableDiv.className = 'table-container';
+
+      let html = `<table class="data-table">`;
+      html += `<thead><tr>`;
+      tableData.columns.forEach(col => {
+        html += `<th>${escapeHtml(col)}</th>`;
+      });
+      html += `</tr></thead><tbody>`;
+      tableData.rows.forEach(row => {
+        html += `<tr>`;
+        row.forEach(cell => {
+          html += `<td>${escapeHtml(String(cell))}</td>`;
+        });
+        html += `</tr>`;
+      });
+      html += `</tbody></table>`;
+      html += `<div class="table-caption">共 ${tableData.rows.length} 条数据</div>`;
+
+      tableDiv.innerHTML = html;
+      messageDiv.appendChild(tableDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    /**
+     * 渲染图表（打断当前文本流）
+     */
+    function renderChart(chartData) {
+      const messageDiv = currentStreamState.messageDiv;
+      if (!messageDiv) return;
+
+      // 【关键】先封口当前文本块
+      sealCurrentTextBlock();
+
+      const chartId = `chart-${Date.now()}`;
+      const chartDiv = document.createElement('div');
+      chartDiv.className = 'chart-container';
+      chartDiv.innerHTML = `<div id="${chartId}" class="chart"></div>`;
+      messageDiv.appendChild(chartDiv);
+
+      setTimeout(() => {
+        const chartElement = chartDiv.querySelector('.chart');
+        if (chartElement) {
+          const chart = echarts.init(chartElement);
+          chart.setOption(chartData);
+          window.addEventListener('resize', () => chart.resize());
+        }
+      }, 100);
+
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    /**
+     * 渲染 SQL 语句（折叠面板，打断当前文本流）
+     */
+    function renderSQL(sql) {
+      currentStreamState.sqlData.push(sql);
+
+      const messageDiv = currentStreamState.messageDiv;
+      if (!messageDiv) return;
+
+      // 【关键】先封口当前文本块
+      sealCurrentTextBlock();
+
+      // 查找或创建 SQL 折叠面板
+      let collapsePanel = messageDiv.querySelector('.collapse-panel.sql-collapse');
+      if (!collapsePanel) {
+        const collapseId = `collapse-${Date.now()}`;
+        collapsePanel = document.createElement('div');
+        collapsePanel.className = 'collapse-panel sql-collapse';
+        collapsePanel.innerHTML = `
+          <div class="collapse-header" onclick="toggleCollapse('${collapseId}')">
+            <span class="collapse-icon" id="${collapseId}-icon">▶</span>
+            <span class="collapse-title">📝 查看执行的 SQL 语句</span>
+          </div>
+          <div class="collapse-content" id="${collapseId}">
+            <div class="collapse-body" id="sql-body-${collapseId}"></div>
+          </div>
+        `;
+        messageDiv.appendChild(collapsePanel);
+      }
+
+      // 添加 SQL 到折叠面板
+      const sqlBody = collapsePanel.querySelector('.collapse-body');
+      const sqlIndex = currentStreamState.sqlData.length;
+      const sqlBlock = document.createElement('div');
+      sqlBlock.className = 'sql-block';
+      sqlBlock.innerHTML = `
+        <div class="sql-header">
+          <div class="sql-header-title">SQL 语句 #${sqlIndex}</div>
+          <button class="sql-copy-btn" onclick="copySQL(this)">复制</button>
+        </div>
+        <pre class="sql-code">${escapeHtml(sql)}</pre>
+      `;
+      sqlBody.appendChild(sqlBlock);
+    }
+
+    /**
+     * 完成流式输出：移除光标，整理布局
+     */
+    function finishStreaming() {
+      // 【关键】封口最后一段文本块
+      sealCurrentTextBlock();
+
+      // 将思考过程折叠起来
+      const thinkingContainer = currentStreamState.thinkingContainer;
+      if (thinkingContainer && thinkingContainer.children.length > 0) {
+        const collapseId = `thinking-collapse-${currentStreamState.timestamp}`;
+        const collapseWrapper = document.createElement('div');
+        collapseWrapper.className = 'collapse-panel';
+        collapseWrapper.style.marginBottom = '10px';
+        collapseWrapper.innerHTML = `
+          <div class="collapse-header" onclick="toggleCollapse('${collapseId}')" style="background: linear-gradient(135deg, #f0f4ff 0%, #e8edff 100%); color: #667eea;">
+            <span class="collapse-icon" id="${collapseId}-icon">▶</span>
+            <span class="collapse-title">🤔 思考过程（${thinkingContainer.children.length} 步）</span>
+          </div>
+          <div class="collapse-content" id="${collapseId}">
+            <div class="collapse-body"></div>
+          </div>
+        `;
+
+        // 移动思考步骤到折叠面板
+        const collapseBody = collapseWrapper.querySelector('.collapse-body');
+        while (thinkingContainer.firstChild) {
+          collapseBody.appendChild(thinkingContainer.firstChild);
+        }
+
+        // 清空思考容器，然后放入折叠面板
+        thinkingContainer.innerHTML = '';
+        thinkingContainer.appendChild(collapseWrapper);
+        thinkingContainer.style.marginBottom = '10px';
+      }
+
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    /**
+     * 使用 SSE 流式发送消息
+     */
+    async function sendStreamingMessage() {
+      const message = messageInput.value.trim();
+
+      if (!message) {
+        messageInput.focus();
+        return;
+      }
+
+      // 添加用户消息
+      addMessage(message, 'user');
+      messageInput.value = '';
+      messageInput.disabled = true;
+      sendBtn.disabled = true;
+
+      // 重置流式状态
+      const { messageDiv, thinkingContainer } = createStreamingMessageContainer();
+      currentStreamState = {
+        messageDiv,
+        thinkingContainer,
+        currentTextBlock: null,
+        textBuffer: '',
+        thinkingSteps: [],
+        tableData: null,
+        chartData: null,
+        sqlData: [],
+        timestamp: null
+      };
+
+      try {
+        const response = await fetch(API_URL_STREAM, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP 错误：${response.status}`);
+        }
+
+        // 使用 ReadableStream 处理 SSE 数据
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+
+          // 解析 SSE 消息
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || ''; // 保留不完整的一行
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+
+              if (data === '[DONE]') {
+                finishStreaming();
+                continue;
+              }
+
+              try {
+                const message = JSON.parse(data);
+                handleSSEMessage(message);
+              } catch (e) {
+                console.error('解析 SSE 消息失败:', e, data);
+              }
+            }
+          }
+        }
+
+      } catch (error) {
+        console.error('SSE 请求失败:', error);
+        addThinkingStep(`错误：${error.message}`, 'error');
+      } finally {
+        messageInput.disabled = false;
+        sendBtn.disabled = false;
+        messageInput.focus();
+      }
+    }
+
+    /**
+     * 处理单条 SSE 消息
+     */
+    function handleSSEMessage(message) {
+      switch (message.type) {
+        case 'thinking':
+          currentStreamState.thinkingSteps.push(message.content);
+          addThinkingStep(message.content, 'thinking');
+          break;
+
+        case 'tool_start':
+          addThinkingStep(`调用工具：${message.name}`, 'tool');
+          break;
+
+        case 'tool_result':
+          addThinkingStep(`${message.name} 完成`, 'tool');
+          break;
+
+        case 'text':
+          appendToFinalAnswer(message.content);
+          break;
+
+        case 'table':
+          currentStreamState.tableData = message;
+          renderTable(message);
+          break;
+
+        case 'chart':
+          currentStreamState.chartData = message.config;
+          renderChart(message.config);
+          break;
+
+        case 'sql':
+          renderSQL(message.sql);
+          break;
+
+        case 'error':
+          addThinkingStep(`错误：${message.message}`, 'error');
+          break;
+
+        case 'done':
+          console.log('流式完成，上下文统计:', message.context);
+          break;
+      }
+    }
+
+    // 复制 SQL 语句到剪贴板
+    function copySQL(button) {
+      const sqlBlock = button.closest('.sql-block');
+      const sqlCode = sqlBlock.querySelector('.sql-code');
+      const sqlText = sqlCode.textContent;
+
+      navigator.clipboard.writeText(sqlText).then(() => {
+        button.textContent = '已复制!';
+        button.style.background = '#28a745';
+        setTimeout(() => {
+          button.textContent = '复制';
+          button.style.background = '#4a9eff';
+        }, 2000);
+      }).catch(err => {
+        console.error('复制失败:', err);
+        button.textContent = '复制失败';
+      });
+    }
+
+    // 切换折叠面板
+    function toggleCollapse(collapseId) {
+      const content = document.getElementById(collapseId);
+      const icon = document.getElementById(`${collapseId}-icon`);
+
+      if (content.classList.contains('expanded')) {
+        content.classList.remove('expanded');
+        icon.classList.remove('expanded');
+      } else {
+        content.classList.add('expanded');
+        icon.classList.add('expanded');
+      }
+    }
+
+    // 处理回车发送
+    function handleKeyPress(event) {
+      if (event.key === 'Enter') {
+        sendStreamingMessage(); // 使用流式发送
+      }
+    }
+
+    // 发送消息（使用 SSE 流式输出）
+    async function sendMessage() {
+      sendStreamingMessage(); // 调用流式版本
+    }
+
+    // 清空对话
+    async function clearChat() {
+      if (!confirm('确定要清空当前对话和日志吗？\n\n此操作将：\n1. 清除聊天窗口中的所有消息\n2. 重置对话上下文\n3. 清空服务器日志文件')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/reset`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.ok) {
+          // 清空聊天窗口
+          messagesDiv.innerHTML = `
+            <div class="message assistant">
+              对话已重置！你好！我是敦煌智能体，请问有什么可以帮您的？
+            </div>
+          `;
+          statusDiv.textContent = '对话已清空';
+          statusDiv.className = 'status connected';
+        } else {
+          throw new Error('清空失败');
+        }
+      } catch (error) {
+        alert('清空对话失败：' + error.message);
+      }
+    }
+
+    // 页面加载时检查连接
+    checkConnection();
+  </script>
+</body>
+</html>

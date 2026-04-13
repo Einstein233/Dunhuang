@@ -1,0 +1,753 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model anhui {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model aomen {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model beijing {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model chongqing {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model conditions {
+  id          Int       @id @default(autoincrement())
+  val         String?   @db.VarChar(6000)
+  type        String?   @db.VarChar(11)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model dict {
+  id          Int       @id @default(autoincrement())
+  name        String?   @db.VarChar(255)
+  type        String?   @db.VarChar(255)
+  remark      String?   @db.VarChar(255)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model dict_item {
+  id          Int       @id @default(autoincrement())
+  dict_id     Int?
+  dict_label  String?   @default("") @db.VarChar(255)
+  dict_value  String?   @default("") @db.VarChar(255)
+  dict_sort   Int?      @default(0)
+  dict_class  String?   @default("") @db.VarChar(255)
+  status      Int?      @default(1)
+  remark      String?   @default("") @db.VarChar(255)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ditor {
+  id          Int       @id @default(autoincrement())
+  val         String?   @db.Text
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model dunhuang {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model files {
+  id          Int       @id @default(autoincrement())
+  val         String?   @db.VarChar(6000)
+  type        Int?      @default(1)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model fujian {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model gansu {
+  year_month_day            String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model guangdong {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model guangxi {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model guizhou {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model hainan {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model hebei {
+  year_month_day            String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model heilongjiang {
+  year_month_day            String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model henan {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model hubei {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model hunan {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model jiangsu {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model jiangxi {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model jilin {
+  year_month_day            String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model liaoning {
+  year_month_day            String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model more {
+  id          Int       @id @default(autoincrement())
+  name        String    @default("") @db.VarChar(255)
+  remark      String?   @db.VarChar(255)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model neimenggu {
+  year_month_day            String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model ningxia {
+  year_month_day            String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model qinghai {
+  year_month_day            String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model roles {
+  id            Int       @id @default(autoincrement())
+  name          String    @default("") @db.VarChar(225)
+  roles         String    @default("") @db.VarChar(10000)
+  checked_roles String    @default("") @db.VarChar(255)
+  role_key      String?   @default("") @db.VarChar(10000)
+  update_time   DateTime? @db.Timestamp(0)
+  create_time   DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model router_menu {
+  id          Int       @id @default(autoincrement())
+  parent_id   Int       @default(0)
+  title       String?   @default("") @db.VarChar(255)
+  icon        String?   @default("") @db.VarChar(255)
+  no_cache    Int?      @default(1)
+  meta        String    @default("") @db.VarChar(255)
+  path        String    @default("/") @db.VarChar(255)
+  hidden      Boolean   @default(false)
+  redirect    String    @default("") @db.VarChar(255)
+  always_show Boolean   @default(false)
+  name        String    @default("") @db.VarChar(255)
+  layout      Boolean   @default(false)
+  parent_view Boolean   @default(false)
+  component   String    @default("/") @db.VarChar(255)
+  sort        Int       @default(0)
+  alone       Int       @default(0)
+  role_key    String?   @default("") @db.VarChar(255)
+  menu_type   String    @default("C") @db.VarChar(255)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model shan1xi {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model shan3xi {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model shandong {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model sichuan {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model taiwan {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model tests {
+  id          Int       @id @default(autoincrement())
+  name        String?   @db.VarChar(255)
+  remark      String?   @db.VarChar(255)
+  more_id     Int?
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model theme {
+  id                   Int       @id @default(autoincrement())
+  user_id              Int?
+  menu_bg              String?   @default("") @db.VarChar(255)
+  menu_sub_bg          String?   @default("") @db.VarChar(255)
+  menu_text            String?   @default("") @db.VarChar(255)
+  menu_active_text     String?   @default("") @db.VarChar(255)
+  menu_sub_active_text String?   @default("") @db.VarChar(255)
+  menu_hover_bg        String?   @default("") @db.VarChar(255)
+  update_time          DateTime? @db.Timestamp(0)
+  create_time          DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model tianjin {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user {
+  id          Int       @id @default(autoincrement())
+  name        String    @default("") @db.VarChar(255)
+  url         String?   @db.VarChar(1000)
+  status      Int       @default(1)
+  roles_id    String    @default("") @db.VarChar(255)
+  remark      String?   @default("") @db.VarChar(255)
+  admin       Int       @default(0)
+  pwd         String    @default("") @db.VarChar(255)
+  more_id     Int       @default(0)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model xianggang {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model xinjiang {
+  year_month_day            String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model xizang {
+  year_month_day            String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model yunnan {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model zhejiang {
+  year_month_day            String? @db.VarChar(255)
+  station_code              String? @db.VarChar(255)
+  max_temperature           String? @db.VarChar(255)
+  min_temperature           String? @db.VarChar(255)
+  avg_temperature           String? @db.VarChar(255)
+  precipitation             String? @db.VarChar(255)
+  rain_sum                  String? @db.VarChar(255)
+  snow_sum                  String? @db.VarChar(255)
+  max_continuous_wind_speed String? @db.VarChar(255)
+  windgusts_max             String? @db.VarChar(255)
+  winddirection_dominant    String? @db.VarChar(255)
+  shortwave_radiation_sum   String? @db.VarChar(255)
+
+  @@ignore
+}
