@@ -1,1 +1,61 @@
-node_modules
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build output
+dist/
+build/
+coverage/
+**/dist/
+**/build/
+**/coverage/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+sql-agent/.env
+
+# IDE / editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Local tool folders
+.claude/
+claude_output/
+
+# Runtime / generated data
+back_con/logs/
+back_con/data/
+back_con/public/
+sql-agent/dist/
+sql-agent/src/generated/
+sql-agent/server.log
+sql-agent/message.log
+sql-agent/c*server.log
+
+# Local database and backup artifacts
+*.bak
+*.zip
+vue_admin_backup.sql
+vue_admin_backup.sql.bak
