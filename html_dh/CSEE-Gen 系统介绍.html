@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSEE-Gen 气候应力等效实验方案自动生成系统</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.8;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .module {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .module-header {
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+        .module-header h2 {
+            color: #667eea;
+            font-size: 1.8em;
+        }
+        .module-header p {
+            color: #666;
+            margin-top: 10px;
+        }
+        .flow-diagram {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .flow-steps {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .flow-step {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-weight: 600;
+            color: #333;
+        }
+        .flow-arrow {
+            color: #667eea;
+            font-size: 1.5em;
+        }
+        .formula-box {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .formula-box h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .formula-box .formula {
+            font-size: 1.2em;
+            text-align: center;
+            padding: 15px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        tr:hover {
+            background: #e8e8e8;
+        }
+        .highlight-box {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #ff9800;
+        }
+        .highlight-box h4 {
+            color: #e65100;
+            margin-bottom: 10px;
+        }
+        .param-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .param-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+        .param-card .name {
+            font-weight: 600;
+            color: #667eea;
+        }
+        .param-card .value {
+            font-size: 1.2em;
+            color: #333;
+        }
+        .param-card .desc {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .stage-box {
+            display: flex;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .stage-card {
+            flex: 1;
+            min-width: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stage-card h4 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        .stage-card .detail {
+            font-size: 0.95em;
+            opacity: 0.9;
+        }
+        footer {
+            text-align: center;
+            color: white;
+            padding: 30px;
+            opacity: 0.8;
+        }
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CSEE-Gen 气候应力等效实验方案自动生成系统</h1>
+            <p>Climate Stress Equivalence Experiment Generator</p>
+        </header>
+
+        <!-- 模块一：系统概述 -->
+        <div class="module">
+            <div class="module-header">
+                <h2>📋 系统概述</h2>
+                <p>将长周期的自然气候数据映射为实验室可执行的等效实验方案</p>
+            </div>
+
+            <div class="flow-diagram">
+                <h3 style="margin-bottom: 20px;">核心业务流程</h3>
+                <div class="flow-steps">
+                    <div class="flow-step">📂 CSV 天气数据</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">🌧️ 事件提取</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-arrow">🔗 能量耦合</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">📋 实验方案生成</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">🔬 硬件 CSV 输出</div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <h4>💡 核心原理</h4>
+                <ul>
+                    <li><strong>能量守恒：</strong>确保实验室环境复现自然气候的破坏效应</li>
+                    <li><strong>槽位预算：</strong>根据实验总时长约束，智能合并相似事件</li>
+                    <li><strong>等效转换：</strong>将自然循环映射为标准实验室循环</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 模块二：降雨 - 日照实验模块 -->
+        <div class="module">
+            <div class="module-header">
+                <h2>🌧️ 模块一：降雨 - 日照实验方案</h2>
+                <p>模拟降雨事件及雨后日照蒸发的完整循环</p>
+            </div>
+
+            <h3 style="margin: 25px 0 15px;">1. 降雨事件提取</h3>
+            <p>以 <strong>3 小时无雨</strong> 为界限，将连续降雨切分为独立的"降雨事件"</p>
+
+            <div class="formula-box">
+                <h4>提取逻辑</h4>
+                <div class="formula">
+                    当 <code>hours_since_rain ≥ 3.0h</code> 时，认为前一场降雨结束
+                </div>
+            </div>
+
+            <p>每个降雨事件包含：</p>
+            <ul>
+                <li><code>V_i</code>：该场降雨的总降雨量 (mm)</li>
+                <li><code>T_start</code>：在自然数据中的开始时间</li>
+                <li><code>E_{solar_48}</code>：降雨结束后 48 小时内的累计日照辐射能 (MJ/m²)</li>
+            </ul>
+
+            <h3 style="margin: 25px 0 15px;">2. 事件合并（槽位预算）</h3>
+            <p>根据用户设定的实验总时长，计算可执行的实验次数上限</p>
+
+            <div class="formula-box">
+                <h4>槽位计算公式</h4>
+                <div class="formula">
+                    $$N_{budget} = \frac{T_{total}}{T_{cycle}}$$
+                    <p style="font-size: 0.8em; margin-top: 10px;">
+                        其中：<code>T_{cycle} = t_{rain} + 12h_{solar} + 12h_{dry}</code>
+                    </p>
+                </div>
+            </div>
+
+            <p>若当前事件数 <code>n > N_{budget}</code>，则反复合并 V 值最小的两个相邻事件，直到事件总数等于槽位预算。</p>
+
+            <h3 style="margin: 25px 0 15px;">3. 能量耦合</h3>
+            <p>日照强度与降雨量挂钩，模拟雨后盐分迁移</p>
+
+            <div class="formula-box">
+                <h4>日照强度动态缩放公式</h4>
+                <div class="formula">
+                    $$I_{lab} = \begin{cases}
+                    I_{max} & V_i \geq V_{avg} \\
+                    I_{max} \cdot \sqrt{\frac{V_i}{V_{avg}}} & V_i < V_{avg}
+                    \end{cases}$$
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <h4>为什么用开平方？</h4>
+                <p>防止微量降雨对应的日照强度过低，导致热应力完全丢失。开平方可以在压缩动态范围的同时，保留一定的气候效应。</p>
+            </div>
+
+            <h3 style="margin: 25px 0 15px;">4. 实验循环结构</h3>
+
+            <div class="stage-box">
+                <div class="stage-card">
+                    <h4>🌧️ 降雨阶段</h4>
+                    <div class="detail">
+                        <p>时长：<code>t = V/I</code></p>
+                        <p>温度：降雨温度中位数</p>
+                        <p>控制：降雨 ON + 风速 ON</p>
+                    </div>
+                </div>
+                <div class="stage-card">
+                    <h4>☀️ 日照阶段</h4>
+                    <div class="detail">
+                        <p>时长：12 小时</p>
+                        <p>温度：白天温度中位数</p>
+                        <p>控制：日照 ON</p>
+                    </div>
+                </div>
+                <div class="stage-card">
+                    <h4>🏜️ 干燥阶段</h4>
+                    <div class="detail">
+                        <p>时长：12 小时</p>
+                        <p>温度：全时段温度中位数</p>
+                        <p>控制：无</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin: 25px 0 15px;">5. 脉冲降雨</h3>
+            <p>当单次降雨时长超过阈值时，自动切割为多段，中间加入暂停间隙</p>
+
+            <div class="formula-box">
+                <h4>脉冲切割逻辑</h4>
+                <div class="formula">
+                    若 <code>t_{rain} > 30 min</code>，则切割为 <code>n = \lceil t_{rain} / 30 \rceil</code> 段
+                </div>
+            </div>
+        </div>
+
+        <!-- 模块三：降雪 - 冻融实验模块 -->
+        <div class="module">
+            <div class="module-header">
+                <h2>❄️ 模块二：降雪 - 冻融实验方案</h2>
+                <p>模拟自然降雪和冻融循环对材料的损伤效应</p>
+            </div>
+
+            <h3 style="margin: 25px 0 15px;">1. 核心原理</h3>
+            <div class="highlight-box">
+                <h4>物理厚度直投映射 + 冻融损伤等效</h4>
+                <ul>
+                    <li><strong>物理厚度直投：</strong>直接统计降雪深度 (cm)，转换为 mm 后分配到每次实验</li>
+                    <li><strong>冻融损伤等效：</strong>基于损伤力学公式，将自然冻融循环等效为标准实验室循环</li>
+                </ul>
+            </div>
+
+            <h3 style="margin: 25px 0 15px;">2. 降雪统计与分配</h3>
+
+            <div class="formula-box">
+                <h4>降雪量计算公式</h4>
+                <div class="formula">
+                    $$总降雪量 (mm) = \sum snowfall_i \times 10$$
+                    <p style="font-size: 0.8em; margin-top: 10px;">
+                        （CSV 中 snowfall 单位为 cm，需×10 转换为 mm）
+                    </p>
+                </div>
+            </div>
+
+            <div class="formula-box">
+                <h4>保守原则分配</h4>
+                <div class="formula">
+                    $$单次降雪量 (mm) = \lceil \frac{总降雪量 (mm)}{降雪事件次数} \rceil$$
+                </div>
+            </div>
+
+            <p>向上取整确保分配的总降雪量不低于实际观测值（保守原则）。</p>
+
+            <h3 style="margin: 25px 0 15px;">3. 冻融损伤计算</h3>
+
+            <div class="formula-box">
+                <h4>冻融损伤值公式</h4>
+                <div class="formula">
+                    $$D = \alpha \times |\Delta T| \times (T_{max} - T_{thaw}) \times (T_{freeze} - T_{min}) \times t^{\beta}$$
+                </div>
+            </div>
+
+            <table style="margin-top: 20px;">
+                <tr>
+                    <th>参数</th>
+                    <th>符号</th>
+                    <th>默认值</th>
+                    <th>说明</th>
+                </tr>
+                <tr>
+                    <td>权重系数</td>
+                    <td>α</td>
+                    <td>1.0</td>
+                    <td>冻融损伤权重系数</td>
+                </tr>
+                <tr>
+                    <td>时间指数</td>
+                    <td>β</td>
+                    <td>0.5</td>
+                    <td>时间效应指数（平方根效应）</td>
+                </tr>
+                <tr>
+                    <td>冻结阈值</td>
+                    <td>T_freeze</td>
+                    <td>-2.2°C</td>
+                    <td>冻结启动温度</td>
+                </tr>
+                <tr>
+                    <td>融化阈值</td>
+                    <td>T_thaw</td>
+                    <td>1.2°C</td>
+                    <td>融化启动温度</td>
+                </tr>
+            </table>
+
+            <h3 style="margin: 25px 0 15px;">4. 实验室标准循环</h3>
+
+            <div class="param-grid">
+                <div class="param-card">
+                    <div class="name">最低温度</div>
+                    <div class="value">-18.0°C</div>
+                    <div class="desc">实验室可达最低温</div>
+                </div>
+                <div class="param-card">
+                    <div class="name">最高温度</div>
+                    <div class="value">5.0°C</div>
+                    <div class="desc">实验室可达最高温</div>
+                </div>
+                <div class="param-card">
+                    <div class="name">冻结时长</div>
+                    <div class="value">6.0 小时</div>
+                    <div class="desc">冻结阶段持续时间</div>
+                </div>
+                <div class="param-card">
+                    <div class="name">融化时长</div>
+                    <div class="value">4.0 小时</div>
+                    <div class="desc">融化阶段持续时间</div>
+                </div>
+            </div>
+
+            <div class="formula-box">
+                <h4>实验室标准损伤值</h4>
+                <div class="formula">
+                    $$D_{lab} = 1.0 \times 23.0 \times 3.8 \times 15.8 \times 2.0 \approx 2761.8$$
+                </div>
+            </div>
+
+            <h3 style="margin: 25px 0 15px;">5. 等效转换</h3>
+
+            <div class="formula-box">
+                <h4>等效转换公式</h4>
+                <div class="formula">
+                    $$等效次数 = \lceil \frac{D_{natural}}{D_{lab}} \rceil$$
+                </div>
+            </div>
+
+            <p>向上取整确保实验室累积损伤 ≥ 自然损伤（保守原则）。</p>
+
+            <h3 style="margin: 25px 0 15px;">6. 实验流程</h3>
+
+            <div class="flow-diagram">
+                <div class="stage-box">
+                    <div class="stage-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                        <h4>🌨️ 阶段 1：降雪</h4>
+                        <div class="detail">
+                            <p>风雪舱</p>
+                            <p>雪花机 ON</p>
+                            <p>温度：-10 ~ -2°C</p>
+                            <p>时长：60 min</p>
+                        </div>
+                    </div>
+                    <div class="stage-card" style="background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);">
+                        <h4>🥶 阶段 2：冻结</h4>
+                        <div class="detail">
+                            <p>风雪舱</p>
+                            <p>雪花机 OFF</p>
+                            <p>温度：-18°C</p>
+                            <p>时长：6 小时</p>
+                        </div>
+                    </div>
+                    <div class="stage-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <h4>🌡️ 阶段 3：融化</h4>
+                        <div class="detail">
+                            <p>温度升高</p>
+                            <p>雪花机 OFF</p>
+                            <p>温度：5°C</p>
+                            <p>时长：4 小时</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模块四：输出格式 -->
+        <div class="module">
+            <div class="module-header">
+                <h2>📤 输出格式</h2>
+                <p>系统生成两种输出文件</p>
+            </div>
+
+            <table>
+                <tr>
+                    <th>输出类型</th>
+                    <th>文件格式</th>
+                    <th>内容说明</th>
+                    <th>用途</th>
+                </tr>
+                <tr>
+                    <td>实验方案</td>
+                    <td>JSON</td>
+                    <td>包含元数据、实验步骤序列、源数据信息</td>
+                    <td>数据交换、结果查看</td>
+                </tr>
+                <tr>
+                    <td>硬件控制</td>
+                    <td>CSV</td>
+                    <td>23 列硬件可执行文件，含温度、日照、降雨、降雪等控制参数</td>
+                    <td>直接导入环境舱控制系统</td>
+                </tr>
+            </table>
+
+            <h3 style="margin: 25px 0 15px;">CSV 列说明（部分关键列）</h3>
+            <ul>
+                <li><code>步骤编号</code> - 步骤序号</li>
+                <li><code>工作状态（ON/OFF）</code> - 设备工作状态</li>
+                <li><code>运行时间（min）</code> - 该步骤持续时间</li>
+                <li><code>起始温度/终点温度（℃）</code> - 温度控制参数</li>
+                <li><code>日照控制标志/强度</code> - 夏季舱日照控制</li>
+                <li><code>降雨控制标志/强度</code> - 风雨舱降雨控制</li>
+                <li><code>降雪控制标志/强度</code> - 风雪舱降雪控制</li>
+            </ul>
+        </div>
+
+        <!-- 模块五：配置参数 -->
+        <div class="module">
+            <div class="module-header">
+                <h2>⚙️ 主要配置参数</h2>
+                <p>所有参数集中在 <code>config.py</code> 中定义，可灵活调整</p>
+            </div>
+
+            <h3 style="margin: 25px 0 15px;">降雨 - 日照模块参数</h3>
+            <div class="param-grid">
+                <div class="param-card">
+                    <div class="name">NO_RAIN_THRESHOLD_HOURS</div>
+                    <div class="value">3.0 小时</div>
+                    <div class="desc">无雨界限时间</div>
+                </div>
+                <div class="param-card">
+                    <div class="name">SOLAR_DURATION_HOURS</div>
+                    <div class="value">12.0 小时</div>
+                    <div class="desc">日照阶段时长</div>
+                </div>
+                <div class="param-card">
+                    <div class="name">PULSE_RAIN_MAX_DURATION_MIN</div>
+                    <div class="value">30.0 分钟</div>
+                    <div class="desc">单次降雨最大时长</div>
+                </div>
+                <div class="param-card">
+                    <div class="name">RAIN_INTENSITY_GEARS</div>
+                    <div class="value">[20, 40, 60] mm/h</div>
+                    <div class="desc">降雨强度档位</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 25px 0 15px;">降雪 - 冻融模块参数</h3>
+            <div class="param-grid">
+                <div class="param-card">
+                    <div class="name">FTC_FREEZE_THRESHOLD</div>
+                    <div class="value">-2.2°C</div>
+                    <div class="desc">冻结启动阈值</div>
+                </div>
+                <div class="param-card">
+                    <div class="name">FTC_THAW_THRESHOLD</div>
+                    <div class="value">1.2°C</div>
+                    <div class="desc">融化启动阈值</div>
+                </div>
+                <div class="param-card">
+                    <div class="name">LAB_FTC_TMIN</div>
+                    <div class="value">-18.0°C</div>
+                    <div class="desc">实验室最低温</div>
+                </div>
+                <div class="param-card">
+                    <div class="name">LAB_FTC_TMAX</div>
+                    <div class="value">5.0°C</div>
+                    <div class="desc">实验室最高温</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>CSEE-Gen v2.0.0 | 敦煌项目气候应力等效实验系统</p>
+            <p>© 2024 敦煌研究院环境舱实验项目组</p>
+        </footer>
+    </div>
+</body>
+</html>

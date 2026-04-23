@@ -1,0 +1,941 @@
+{
+  "experiment_meta": {
+    "target_days": 30,
+    "actual_cycles": 28,
+    "total_rain_volume": 653.7,
+    "baseline_temp": 15.8,
+    "original_events": 112,
+    "merged_events": 28,
+    "pulse_rain_events": 21,
+    "pulse_max_duration_min": 30.0
+  },
+  "sequence": [
+    {
+      "step": 1,
+      "mode": "Rain",
+      "duration_min": 11.1,
+      "target_temp": 15.8,
+      "intensity": 60.0
+    },
+    {
+      "step": 2,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 3,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 4,
+      "mode": "Rain",
+      "duration_min": 23.1,
+      "target_temp": 15.8,
+      "intensity": 60.0
+    },
+    {
+      "step": 5,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 6,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 7,
+      "mode": "Rain",
+      "duration_min": 18.2,
+      "target_temp": 15.8,
+      "intensity": 60.0
+    },
+    {
+      "step": 8,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 9,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 10,
+      "mode": "Rain",
+      "duration_min": 16.8,
+      "target_temp": 15.8,
+      "intensity": 60.0
+    },
+    {
+      "step": 11,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 12,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 13,
+      "mode": "Rain",
+      "duration_min": 10.4,
+      "target_temp": 15.8,
+      "intensity": 60.0
+    },
+    {
+      "step": 14,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 15,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 16,
+      "mode": "Rain",
+      "duration_min": 13.65,
+      "target_temp": 15.8,
+      "intensity": 40.0
+    },
+    {
+      "step": 17,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 18,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 19,
+      "mode": "Rain",
+      "duration_min": 20.6,
+      "target_temp": 15.8,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 20,
+      "mode": "Rain_Pause",
+      "duration_min": 20.6,
+      "target_temp": 15.8,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 21,
+      "mode": "Rain",
+      "duration_min": 20.6,
+      "target_temp": 15.8,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 2
+    },
+    {
+      "step": 22,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 23,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 24,
+      "mode": "Rain",
+      "duration_min": 12.6,
+      "target_temp": 15.8,
+      "intensity": 20.0
+    },
+    {
+      "step": 25,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 26,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 27,
+      "mode": "Rain",
+      "duration_min": 21.2,
+      "target_temp": 15.8,
+      "intensity": 60.0
+    },
+    {
+      "step": 28,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 29,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 30,
+      "mode": "Rain",
+      "duration_min": 12.9,
+      "target_temp": 15.8,
+      "intensity": 40.0
+    },
+    {
+      "step": 31,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 32,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 33,
+      "mode": "Rain",
+      "duration_min": 22.47,
+      "target_temp": 15.8,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 3
+    },
+    {
+      "step": 34,
+      "mode": "Rain_Pause",
+      "duration_min": 22.47,
+      "target_temp": 15.8,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 3
+    },
+    {
+      "step": 35,
+      "mode": "Rain",
+      "duration_min": 22.47,
+      "target_temp": 15.8,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 3
+    },
+    {
+      "step": 36,
+      "mode": "Rain_Pause",
+      "duration_min": 22.47,
+      "target_temp": 15.8,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 3
+    },
+    {
+      "step": 37,
+      "mode": "Rain",
+      "duration_min": 22.47,
+      "target_temp": 15.8,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 3,
+      "pulse_total": 3
+    },
+    {
+      "step": 38,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 39,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 40,
+      "mode": "Rain",
+      "duration_min": 3.15,
+      "target_temp": 15.8,
+      "intensity": 40.0
+    },
+    {
+      "step": 41,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 42,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 43,
+      "mode": "Rain",
+      "duration_min": 20.0,
+      "target_temp": 15.8,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 44,
+      "mode": "Rain_Pause",
+      "duration_min": 20.0,
+      "target_temp": 15.8,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 45,
+      "mode": "Rain",
+      "duration_min": 20.0,
+      "target_temp": 15.8,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 2
+    },
+    {
+      "step": 46,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 47,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 48,
+      "mode": "Rain",
+      "duration_min": 14.3,
+      "target_temp": 15.8,
+      "intensity": 60.0
+    },
+    {
+      "step": 49,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 50,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 51,
+      "mode": "Rain",
+      "duration_min": 11.7,
+      "target_temp": 15.8,
+      "intensity": 40.0
+    },
+    {
+      "step": 52,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 53,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 54,
+      "mode": "Rain",
+      "duration_min": 15.75,
+      "target_temp": 15.8,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 55,
+      "mode": "Rain_Pause",
+      "duration_min": 15.75,
+      "target_temp": 15.8,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 56,
+      "mode": "Rain",
+      "duration_min": 15.75,
+      "target_temp": 15.8,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 2
+    },
+    {
+      "step": 57,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 58,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 59,
+      "mode": "Rain",
+      "duration_min": 17.0,
+      "target_temp": 15.8,
+      "intensity": 60.0
+    },
+    {
+      "step": 60,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 61,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 62,
+      "mode": "Rain",
+      "duration_min": 17.1,
+      "target_temp": 15.8,
+      "intensity": 20.0
+    },
+    {
+      "step": 63,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 64,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 65,
+      "mode": "Rain",
+      "duration_min": 20.2,
+      "target_temp": 15.8,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 66,
+      "mode": "Rain_Pause",
+      "duration_min": 20.2,
+      "target_temp": 15.8,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 67,
+      "mode": "Rain",
+      "duration_min": 20.2,
+      "target_temp": 15.8,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 2
+    },
+    {
+      "step": 68,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 69,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 70,
+      "mode": "Rain",
+      "duration_min": 10.9,
+      "target_temp": 15.8,
+      "intensity": 60.0
+    },
+    {
+      "step": 71,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 72,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 73,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 15.8,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 8
+    },
+    {
+      "step": 74,
+      "mode": "Rain_Pause",
+      "duration_min": 26.33,
+      "target_temp": 15.8,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 8
+    },
+    {
+      "step": 75,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 15.8,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 8
+    },
+    {
+      "step": 76,
+      "mode": "Rain_Pause",
+      "duration_min": 26.33,
+      "target_temp": 15.8,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 8
+    },
+    {
+      "step": 77,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 15.8,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 3,
+      "pulse_total": 8
+    },
+    {
+      "step": 78,
+      "mode": "Rain_Pause",
+      "duration_min": 26.33,
+      "target_temp": 15.8,
+      "is_pulse": true,
+      "pulse_current": 3,
+      "pulse_total": 8
+    },
+    {
+      "step": 79,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 15.8,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 4,
+      "pulse_total": 8
+    },
+    {
+      "step": 80,
+      "mode": "Rain_Pause",
+      "duration_min": 26.33,
+      "target_temp": 15.8,
+      "is_pulse": true,
+      "pulse_current": 4,
+      "pulse_total": 8
+    },
+    {
+      "step": 81,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 15.8,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 5,
+      "pulse_total": 8
+    },
+    {
+      "step": 82,
+      "mode": "Rain_Pause",
+      "duration_min": 26.33,
+      "target_temp": 15.8,
+      "is_pulse": true,
+      "pulse_current": 5,
+      "pulse_total": 8
+    },
+    {
+      "step": 83,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 15.8,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 6,
+      "pulse_total": 8
+    },
+    {
+      "step": 84,
+      "mode": "Rain_Pause",
+      "duration_min": 26.33,
+      "target_temp": 15.8,
+      "is_pulse": true,
+      "pulse_current": 6,
+      "pulse_total": 8
+    },
+    {
+      "step": 85,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 15.8,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 7,
+      "pulse_total": 8
+    },
+    {
+      "step": 86,
+      "mode": "Rain_Pause",
+      "duration_min": 26.33,
+      "target_temp": 15.8,
+      "is_pulse": true,
+      "pulse_current": 7,
+      "pulse_total": 8
+    },
+    {
+      "step": 87,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 15.8,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 8,
+      "pulse_total": 8
+    },
+    {
+      "step": 88,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 89,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 90,
+      "mode": "Rain",
+      "duration_min": 18.3,
+      "target_temp": 15.8,
+      "intensity": 60.0
+    },
+    {
+      "step": 91,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 92,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 93,
+      "mode": "Rain",
+      "duration_min": 14.8,
+      "target_temp": 15.8,
+      "intensity": 60.0
+    },
+    {
+      "step": 94,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 95,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 96,
+      "mode": "Rain",
+      "duration_min": 12.3,
+      "target_temp": 15.8,
+      "intensity": 40.0
+    },
+    {
+      "step": 97,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 98,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 99,
+      "mode": "Rain",
+      "duration_min": 15.7,
+      "target_temp": 15.8,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 100,
+      "mode": "Rain_Pause",
+      "duration_min": 15.7,
+      "target_temp": 15.8,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 101,
+      "mode": "Rain",
+      "duration_min": 15.7,
+      "target_temp": 15.8,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 2
+    },
+    {
+      "step": 102,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 103,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 104,
+      "mode": "Rain",
+      "duration_min": 12.8,
+      "target_temp": 15.8,
+      "intensity": 60.0
+    },
+    {
+      "step": 105,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 106,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 107,
+      "mode": "Rain",
+      "duration_min": 11.7,
+      "target_temp": 15.8,
+      "intensity": 40.0
+    },
+    {
+      "step": 108,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 109,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 110,
+      "mode": "Rain",
+      "duration_min": 19.0,
+      "target_temp": 15.8,
+      "intensity": 60.0
+    },
+    {
+      "step": 111,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 35.0,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 112,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "duration_hour": 12.0
+    }
+  ],
+  "source_info": {
+    "csv_path": "data/processed_weather_data_tianjin.csv",
+    "data_range": {
+      "start": "2024-01-01T00:00:00",
+      "end": "2024-12-31T23:00:00"
+    },
+    "event_stats": {
+      "total_events": 112,
+      "avg_rain": 5.836607142857143,
+      "avg_esolar_48": 34.51757142857143,
+      "min_rain": 0.1,
+      "max_rain": 140.4,
+      "median_rain": 1.0
+    },
+    "merge_info": {
+      "original_count": 112,
+      "merged_count": 28,
+      "reduction_rate": 0.75,
+      "total_rain_before": 653.7,
+      "total_rain_after": 653.7,
+      "rain_conserved": true,
+      "merge_operations_count": 84
+    }
+  }
+}

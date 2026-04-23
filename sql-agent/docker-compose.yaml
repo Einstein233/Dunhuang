@@ -1,0 +1,28 @@
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: dunhuang-mysql-prod
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: dunhuang_agent
+    ports:
+      - "3308:3306"
+    volumes:
+      - dunhuang_db_data:/var/lib/mysql
+      - ./SQL:/docker-entrypoint-initdb.d
+
+  agent-api:
+    build: .
+    container_name: dunhuang-agent-prod
+    ports:
+      - "3001:3000"
+    depends_on:
+      - mysql-db
+    environment:
+      DATABASE_URL: mysql://root:root@mysql-db:3306/dunhuang_agent
+      PORT: 3000
+      QWEN_API_KEY: ${QWEN_API_KEY}
+      QWEN_BASE_URL: ${QWEN_BASE_URL}
+
+volumes:
+  dunhuang_db_data:

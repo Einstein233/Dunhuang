@@ -1,0 +1,1168 @@
+{
+  "experiment_meta": {
+    "target_days": 20,
+    "actual_cycles": 19,
+    "total_rain_volume": 653.7,
+    "baseline_temp": 15.8,
+    "original_events": 112,
+    "merged_events": 19,
+    "pulse_rain_events": 27,
+    "pulse_max_duration_min": 30.0
+  },
+  "sequence": [
+    {
+      "step": 1,
+      "mode": "Rain",
+      "duration_min": 17.1,
+      "target_temp": 11.2,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 2,
+      "mode": "Rain_Pause",
+      "duration_min": 17.1,
+      "target_temp": 11.2,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 3,
+      "mode": "Rain",
+      "duration_min": 17.1,
+      "target_temp": 11.2,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 2
+    },
+    {
+      "step": 4,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 12.23,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 5,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 6,
+      "mode": "Rain",
+      "duration_min": 17.5,
+      "target_temp": 17.45,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 7,
+      "mode": "Rain_Pause",
+      "duration_min": 17.5,
+      "target_temp": 17.45,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 8,
+      "mode": "Rain",
+      "duration_min": 17.5,
+      "target_temp": 17.45,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 2
+    },
+    {
+      "step": 9,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 17.91,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 10,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 11,
+      "mode": "Rain",
+      "duration_min": 19.5,
+      "target_temp": 24.06,
+      "wind_speed": 3.33,
+      "intensity": 60.0
+    },
+    {
+      "step": 12,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 23.08,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 13,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 14,
+      "mode": "Rain",
+      "duration_min": 20.6,
+      "target_temp": 19.8,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 15,
+      "mode": "Rain_Pause",
+      "duration_min": 20.6,
+      "target_temp": 19.8,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 16,
+      "mode": "Rain",
+      "duration_min": 20.6,
+      "target_temp": 19.8,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 2
+    },
+    {
+      "step": 17,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 19.8,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 18,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 19,
+      "mode": "Rain",
+      "duration_min": 17.0,
+      "target_temp": 27.38,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 20,
+      "mode": "Rain_Pause",
+      "duration_min": 17.0,
+      "target_temp": 27.38,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 21,
+      "mode": "Rain",
+      "duration_min": 17.0,
+      "target_temp": 27.38,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 2
+    },
+    {
+      "step": 22,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 25.71,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 23,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 24,
+      "mode": "Rain",
+      "duration_min": 22.47,
+      "target_temp": 26.1,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 3
+    },
+    {
+      "step": 25,
+      "mode": "Rain_Pause",
+      "duration_min": 22.47,
+      "target_temp": 26.1,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 3
+    },
+    {
+      "step": 26,
+      "mode": "Rain",
+      "duration_min": 22.47,
+      "target_temp": 26.1,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 3
+    },
+    {
+      "step": 27,
+      "mode": "Rain_Pause",
+      "duration_min": 22.47,
+      "target_temp": 26.1,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 3
+    },
+    {
+      "step": 28,
+      "mode": "Rain",
+      "duration_min": 22.47,
+      "target_temp": 26.1,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 3,
+      "pulse_total": 3
+    },
+    {
+      "step": 29,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 26.25,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 30,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 31,
+      "mode": "Rain",
+      "duration_min": 3.15,
+      "target_temp": 29.56,
+      "wind_speed": 3.33,
+      "intensity": 40.0
+    },
+    {
+      "step": 32,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 27.65,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 33,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 34,
+      "mode": "Rain",
+      "duration_min": 20.0,
+      "target_temp": 28.85,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 35,
+      "mode": "Rain_Pause",
+      "duration_min": 20.0,
+      "target_temp": 28.85,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 36,
+      "mode": "Rain",
+      "duration_min": 20.0,
+      "target_temp": 28.85,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 2
+    },
+    {
+      "step": 37,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 31.8,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 38,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 39,
+      "mode": "Rain",
+      "duration_min": 22.1,
+      "target_temp": 30.2,
+      "wind_speed": 3.33,
+      "intensity": 60.0
+    },
+    {
+      "step": 40,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 27.68,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 41,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 42,
+      "mode": "Rain",
+      "duration_min": 15.75,
+      "target_temp": 28.35,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 43,
+      "mode": "Rain_Pause",
+      "duration_min": 15.75,
+      "target_temp": 28.35,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 44,
+      "mode": "Rain",
+      "duration_min": 15.75,
+      "target_temp": 28.35,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 2
+    },
+    {
+      "step": 45,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 28.85,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 46,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 47,
+      "mode": "Rain",
+      "duration_min": 22.7,
+      "target_temp": 28.52,
+      "wind_speed": 3.33,
+      "intensity": 60.0
+    },
+    {
+      "step": 48,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 28.64,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 49,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 50,
+      "mode": "Rain",
+      "duration_min": 20.2,
+      "target_temp": 25.2,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 51,
+      "mode": "Rain_Pause",
+      "duration_min": 20.2,
+      "target_temp": 25.2,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 52,
+      "mode": "Rain",
+      "duration_min": 20.2,
+      "target_temp": 25.2,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 2
+    },
+    {
+      "step": 53,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 24.9,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 54,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 55,
+      "mode": "Rain",
+      "duration_min": 10.9,
+      "target_temp": 27.61,
+      "wind_speed": 3.33,
+      "intensity": 60.0
+    },
+    {
+      "step": 56,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 22.55,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 57,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 58,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 25.3,
+      "wind_speed": 3.33,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 8
+    },
+    {
+      "step": 59,
+      "mode": "Rain_Pause",
+      "duration_min": 26.33,
+      "target_temp": 25.3,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 8
+    },
+    {
+      "step": 60,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 25.3,
+      "wind_speed": 3.33,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 8
+    },
+    {
+      "step": 61,
+      "mode": "Rain_Pause",
+      "duration_min": 26.33,
+      "target_temp": 25.3,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 8
+    },
+    {
+      "step": 62,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 25.3,
+      "wind_speed": 3.33,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 3,
+      "pulse_total": 8
+    },
+    {
+      "step": 63,
+      "mode": "Rain_Pause",
+      "duration_min": 26.33,
+      "target_temp": 25.3,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 3,
+      "pulse_total": 8
+    },
+    {
+      "step": 64,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 25.3,
+      "wind_speed": 3.33,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 4,
+      "pulse_total": 8
+    },
+    {
+      "step": 65,
+      "mode": "Rain_Pause",
+      "duration_min": 26.33,
+      "target_temp": 25.3,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 4,
+      "pulse_total": 8
+    },
+    {
+      "step": 66,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 25.3,
+      "wind_speed": 3.33,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 5,
+      "pulse_total": 8
+    },
+    {
+      "step": 67,
+      "mode": "Rain_Pause",
+      "duration_min": 26.33,
+      "target_temp": 25.3,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 5,
+      "pulse_total": 8
+    },
+    {
+      "step": 68,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 25.3,
+      "wind_speed": 3.33,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 6,
+      "pulse_total": 8
+    },
+    {
+      "step": 69,
+      "mode": "Rain_Pause",
+      "duration_min": 26.33,
+      "target_temp": 25.3,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 6,
+      "pulse_total": 8
+    },
+    {
+      "step": 70,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 25.3,
+      "wind_speed": 3.33,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 7,
+      "pulse_total": 8
+    },
+    {
+      "step": 71,
+      "mode": "Rain_Pause",
+      "duration_min": 26.33,
+      "target_temp": 25.3,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 7,
+      "pulse_total": 8
+    },
+    {
+      "step": 72,
+      "mode": "Rain",
+      "duration_min": 26.33,
+      "target_temp": 25.3,
+      "wind_speed": 3.33,
+      "intensity": 40.0,
+      "is_pulse": true,
+      "pulse_current": 8,
+      "pulse_total": 8
+    },
+    {
+      "step": 73,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 24.8,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 74,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 75,
+      "mode": "Rain",
+      "duration_min": 18.3,
+      "target_temp": 25.48,
+      "wind_speed": 3.33,
+      "intensity": 60.0
+    },
+    {
+      "step": 76,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 22.96,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 77,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 78,
+      "mode": "Rain",
+      "duration_min": 23.0,
+      "target_temp": 22.47,
+      "wind_speed": 3.33,
+      "intensity": 60.0
+    },
+    {
+      "step": 79,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 21.57,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 80,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 81,
+      "mode": "Rain",
+      "duration_min": 15.7,
+      "target_temp": 13.7,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 82,
+      "mode": "Rain_Pause",
+      "duration_min": 15.7,
+      "target_temp": 13.7,
+      "wind_speed": 3.33,
+      "is_pulse": true,
+      "pulse_current": 1,
+      "pulse_total": 2
+    },
+    {
+      "step": 83,
+      "mode": "Rain",
+      "duration_min": 15.7,
+      "target_temp": 13.7,
+      "wind_speed": 3.33,
+      "intensity": 60.0,
+      "is_pulse": true,
+      "pulse_current": 2,
+      "pulse_total": 2
+    },
+    {
+      "step": 84,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 13.25,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 85,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 86,
+      "mode": "Rain",
+      "duration_min": 20.6,
+      "target_temp": 15.62,
+      "wind_speed": 3.33,
+      "intensity": 60.0
+    },
+    {
+      "step": 87,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 15.73,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 88,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 89,
+      "mode": "Rain",
+      "duration_min": 19.0,
+      "target_temp": 10.3,
+      "wind_speed": 3.33,
+      "intensity": 60.0
+    },
+    {
+      "step": 90,
+      "mode": "Solar",
+      "duration_min": 720.0,
+      "target_temp": 12.33,
+      "wind_speed": 3.33,
+      "intensity_watt": 1000.0,
+      "duration_hour": 12.0
+    },
+    {
+      "step": 91,
+      "mode": "Dry_Baseline",
+      "duration_min": 720.0,
+      "target_temp": 15.8,
+      "wind_speed": 3.33,
+      "duration_hour": 12.0
+    }
+  ],
+  "source_info": {
+    "csv_path": "data/processed_weather_data_tianjin.csv",
+    "data_range": {
+      "start": "2024-01-01T00:00:00",
+      "end": "2024-12-31T23:00:00"
+    },
+    "event_stats": {
+      "total_events": 112,
+      "avg_rain": 5.836607142857143,
+      "avg_esolar_48": 34.51757142857143,
+      "min_rain": 0.1,
+      "max_rain": 140.4,
+      "median_rain": 1.0
+    },
+    "merged_events": [
+      {
+        "event_id": 1,
+        "total_rain": 34.2,
+        "start_time": "2024-01-17T15:00:00",
+        "end_time": "2024-04-23T18:00:00",
+        "duration_hours": 2331.0,
+        "avg_rain_intensity": 0.01,
+        "esolar_48": 44.71,
+        "weighted_timestamp": "2024-04-13T20:30:00",
+        "rain_temp_median": 11.2,
+        "daytime_temp_median": 12.23,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 33,
+        "total_rain": 35.0,
+        "start_time": "2024-04-27T03:00:00",
+        "end_time": "2024-05-25T22:00:00",
+        "duration_hours": 691.0,
+        "avg_rain_intensity": 0.05,
+        "esolar_48": 48.85,
+        "weighted_timestamp": "2024-05-17T02:33:25.714286",
+        "rain_temp_median": 17.45,
+        "daytime_temp_median": 17.91,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 61,
+        "total_rain": 19.5,
+        "start_time": "2024-06-07T08:00:00",
+        "end_time": "2024-07-01T18:00:00",
+        "duration_hours": 586.0,
+        "avg_rain_intensity": 0.03,
+        "esolar_48": 47.19,
+        "weighted_timestamp": "2024-06-13T10:40:18.461539",
+        "rain_temp_median": 24.06,
+        "daytime_temp_median": 23.08,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 83,
+        "total_rain": 41.2,
+        "start_time": "2024-07-02T02:00:00",
+        "end_time": "2024-07-03T00:00:00",
+        "duration_hours": 22.0,
+        "avg_rain_intensity": 1.87,
+        "esolar_48": 36.75,
+        "weighted_timestamp": "2024-07-02T13:10:55.339806",
+        "rain_temp_median": 19.8,
+        "daytime_temp_median": 19.8,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 85,
+        "total_rain": 34.0,
+        "start_time": "2024-07-04T03:00:00",
+        "end_time": "2024-07-24T14:00:00",
+        "duration_hours": 491.0,
+        "avg_rain_intensity": 0.07,
+        "esolar_48": 37.62,
+        "weighted_timestamp": "2024-07-08T23:01:35.294118",
+        "rain_temp_median": 27.38,
+        "daytime_temp_median": 25.71,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 113,
+        "total_rain": 67.4,
+        "start_time": "2024-07-24T18:00:00",
+        "end_time": "2024-07-26T08:00:00",
+        "duration_hours": 38.0,
+        "avg_rain_intensity": 1.77,
+        "esolar_48": 31.18,
+        "weighted_timestamp": "2024-07-25T16:22:25.994065",
+        "rain_temp_median": 26.1,
+        "daytime_temp_median": 26.25,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 115,
+        "total_rain": 2.1,
+        "start_time": "2024-07-27T05:00:00",
+        "end_time": "2024-07-29T17:00:00",
+        "duration_hours": 60.0,
+        "avg_rain_intensity": 0.04,
+        "esolar_48": 40.4,
+        "weighted_timestamp": "2024-07-28T00:14:17.142857",
+        "rain_temp_median": 29.56,
+        "daytime_temp_median": 27.65,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 121,
+        "total_rain": 40.0,
+        "start_time": "2024-07-29T22:00:00",
+        "end_time": "2024-07-31T02:00:00",
+        "duration_hours": 28.0,
+        "avg_rain_intensity": 1.43,
+        "esolar_48": 37.86,
+        "weighted_timestamp": "2024-07-30T13:19:21",
+        "rain_temp_median": 28.85,
+        "daytime_temp_median": 31.8,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 123,
+        "total_rain": 22.1,
+        "start_time": "2024-08-01T00:00:00",
+        "end_time": "2024-08-07T15:00:00",
+        "duration_hours": 159.0,
+        "avg_rain_intensity": 0.14,
+        "esolar_48": 31.47,
+        "weighted_timestamp": "2024-08-03T08:10:51.583710",
+        "rain_temp_median": 30.2,
+        "daytime_temp_median": 27.68,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 149,
+        "total_rain": 31.5,
+        "start_time": "2024-08-09T11:00:00",
+        "end_time": "2024-08-10T08:00:00",
+        "duration_hours": 21.0,
+        "avg_rain_intensity": 1.5,
+        "esolar_48": 44.82,
+        "weighted_timestamp": "2024-08-10T01:13:20",
+        "rain_temp_median": 28.35,
+        "daytime_temp_median": 28.85,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 151,
+        "total_rain": 22.7,
+        "start_time": "2024-08-12T18:00:00",
+        "end_time": "2024-08-18T15:00:00",
+        "duration_hours": 141.0,
+        "avg_rain_intensity": 0.16,
+        "esolar_48": 34.83,
+        "weighted_timestamp": "2024-08-14T13:33:18.237885",
+        "rain_temp_median": 28.52,
+        "daytime_temp_median": 28.64,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 161,
+        "total_rain": 40.4,
+        "start_time": "2024-08-19T00:00:00",
+        "end_time": "2024-08-19T16:00:00",
+        "duration_hours": 16.0,
+        "avg_rain_intensity": 2.52,
+        "esolar_48": 29.96,
+        "weighted_timestamp": "2024-08-19T06:23:19.009901",
+        "rain_temp_median": 25.2,
+        "daytime_temp_median": 24.9,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 163,
+        "total_rain": 10.899999999999999,
+        "start_time": "2024-08-19T20:00:00",
+        "end_time": "2024-08-25T06:00:00",
+        "duration_hours": 130.0,
+        "avg_rain_intensity": 0.08,
+        "esolar_48": 21.2,
+        "weighted_timestamp": "2024-08-23T14:18:09.908257",
+        "rain_temp_median": 27.61,
+        "daytime_temp_median": 22.55,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 177,
+        "total_rain": 140.4,
+        "start_time": "2024-08-25T11:00:00",
+        "end_time": "2024-08-26T21:00:00",
+        "duration_hours": 34.0,
+        "avg_rain_intensity": 4.13,
+        "esolar_48": 45.77,
+        "weighted_timestamp": "2024-08-26T10:38:43.076923",
+        "rain_temp_median": 25.3,
+        "daytime_temp_median": 24.8,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 179,
+        "total_rain": 18.299999999999997,
+        "start_time": "2024-09-01T03:00:00",
+        "end_time": "2024-09-09T10:00:00",
+        "duration_hours": 199.0,
+        "avg_rain_intensity": 0.09,
+        "esolar_48": 34.71,
+        "weighted_timestamp": "2024-09-03T01:56:43.278688",
+        "rain_temp_median": 25.48,
+        "daytime_temp_median": 22.96,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 191,
+        "total_rain": 23.0,
+        "start_time": "2024-09-09T16:00:00",
+        "end_time": "2024-09-20T18:00:00",
+        "duration_hours": 266.0,
+        "avg_rain_intensity": 0.09,
+        "esolar_48": 25.15,
+        "weighted_timestamp": "2024-09-13T09:13:02.608696",
+        "rain_temp_median": 22.47,
+        "daytime_temp_median": 21.57,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 201,
+        "total_rain": 31.4,
+        "start_time": "2024-09-29T23:00:00",
+        "end_time": "2024-09-30T17:00:00",
+        "duration_hours": 18.0,
+        "avg_rain_intensity": 1.74,
+        "esolar_48": 34.95,
+        "weighted_timestamp": "2024-09-30T08:13:45.477707",
+        "rain_temp_median": 13.7,
+        "daytime_temp_median": 13.25,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 203,
+        "total_rain": 20.6,
+        "start_time": "2024-10-09T15:00:00",
+        "end_time": "2024-11-13T13:00:00",
+        "duration_hours": 838.0,
+        "avg_rain_intensity": 0.02,
+        "esolar_48": 23.43,
+        "weighted_timestamp": "2024-10-22T14:43:06.407767",
+        "rain_temp_median": 15.62,
+        "daytime_temp_median": 15.73,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      },
+      {
+        "event_id": 215,
+        "total_rain": 19.0,
+        "start_time": "2024-11-13T19:00:00",
+        "end_time": "2024-12-13T01:00:00",
+        "duration_hours": 702.0,
+        "avg_rain_intensity": 0.03,
+        "esolar_48": 13.03,
+        "weighted_timestamp": "2024-11-18T03:27:28.421053",
+        "rain_temp_median": 10.3,
+        "daytime_temp_median": 12.33,
+        "dry_temp_median": 15.8,
+        "wind_speed_avg": 3.33
+      }
+    ],
+    "merge_info": {
+      "original_count": 112,
+      "merged_count": 19,
+      "reduction_rate": 0.83,
+      "total_rain_before": 653.7,
+      "total_rain_after": 653.7,
+      "rain_conserved": true,
+      "merge_operations_count": 93
+    }
+  }
+}
