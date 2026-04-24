@@ -29,20 +29,44 @@ function RandomNumBoth(Min: any, Max: any) {
 }
 
 // 根据params去匹配搜索字典中的对应province和所属气候片区（要对应颜色渲染）
-function getRegionNameByAdcode(regionCode: number) {
-    var name, climate;
-    for (const key in regionCodes) {
-        if (regionCodes[key].adcode === regionCode) {
-            name = regionCodes[key].name;
-            for (const index in climateRegions){
-                if (climateRegions[index].includes(name)){
-                    climate = index;
-                    return {name, climate};
-                }
-            }
+// 先匹配当前的level是city还是province，如果是city则要使用其province信息来匹配气候片区，因为没有定义子城市的气候片区
+export function getRegionNameByAdcode(regionCode: string | number) {
+  for (const key in regionCodes) {
+    const region = regionCodes[key];
+
+    if (String(region.adcode) === String(regionCode)) {
+      const name = region.name;
+      const level = region.level;
+
+      // 省级直接用 name，市级用 province 去匹配气候片区
+      const climateMatchName =
+        level === "city" ? region.province : region.name;
+
+      console.log("region match name =", name);
+      console.log("climate match name =", climateMatchName);
+
+      for (const climate in climateRegions) {
+        if (climateRegions[climate].includes(climateMatchName)) {
+          return {
+            name,
+            climate,
+            level,
+            adcode: region.adcode,
+            province: region.province || region.name,
+          };
         }
+      }
+      // 找到了行政区，但没找到气候片区
+      return {
+        name,
+        climate: null,
+        level,
+        adcode: region.adcode,
+        province: region.province || region.name,
+      };
     }
-    return null; // 没找到就返回null或undefined
+  }
+  return null;
 }
 
 //左中
@@ -219,24 +243,34 @@ export default [
             // 若不是全局的中国地图，返回省内各城市数据
             if (params.regionCode && !["china"].includes(params.regionCode)) {
 
+                console.log("param_infoooo123 = ", params)
                 // 根据点击获取的行政编码去匹配对用城市信息和所属气候类型
                 const param_info = getRegionNameByAdcode(params.regionCode)
                 const fixedCityData: any[] = [];
+                console.log("param_infoooo = ", param_info)
 
                 if (!param_info || !param_info.climate) {   // 确保传入paraminfo可以处理异常值
                     throw new Error('找不到气候类型');
                 }
-                if (provinceCities[param_info?.name.slice(0,2)] == undefined) {   // 如果点击区域是直辖市则不做任何操作
+
+                const provinceName = param_info.level === "city" ? 
+                    param_info.province : param_info.name;
+
+                const provinceKey = provinceName.slice(0, 2);
+
+                if (provinceCities[provinceKey] == undefined) {   // 如果点击区域是直辖市则不做任何操作
                     window["$message"].warning("暂无下级地市");
                     throw new Error('直辖市，无下级城市');
                 }
-                Object.entries(provinceCities[param_info?.name.slice(0,2)]).forEach(city => {
+
+                Object.entries(provinceCities[provinceKey]).forEach(city => {
                     fixedCityData.push({
                         name: city[1],
                         value: climateTypeToValue[param_info.climate],
                         climate: param_info?.climate
                     });
                 });
+                console.log("fixedCityData = ", fixedCityData)
 
                 return {
                     success: true,

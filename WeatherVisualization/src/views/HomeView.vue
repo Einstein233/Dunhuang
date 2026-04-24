@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { ref, onBeforeUnmount, watch } from "vue";
+import { ref, onBeforeUnmount, watch, computed } from "vue";
 import { RouterView } from "vue-router";
 import ScaleScreen from "@/components/scale-screen";
 import Headers from "./header.vue";
@@ -9,7 +9,7 @@ import { useSettingStore } from "@/stores/index";
 import { storeToRefs } from "pinia";
 import MessageContent from "@/components/Plugins/MessageContent";
 import { ElSelect, ElOption } from "element-plus";
-import { popupRegions } from "./index/bottom.map";
+import { popupProvinceRegions, popupCityRegions, countyCities, antiqueTypeList } from "./index/bottom.map";
 import axios from "axios";
 
 const settingStore = useSettingStore();
@@ -18,6 +18,34 @@ const wrapperStyle = {};
 
 const simulationResult = ref(null); // 保存后端返回的数据
 const loading = ref(false);
+
+// 判断当前点击的交互弹窗的地区是province还是city
+const regionOptions = computed(() => {
+  const climate = currentRegion.value.climate;
+  const level = currentRegion.value.level;
+  const area = currentRegion.value.area;
+  const name = currentRegion.value.name;
+
+  if (!climate || !area) return [];
+
+  // 先判断来源区域 bottom_map：按气候片区显示省
+  if (area === "bottom_map") {
+    return popupProvinceRegions[climate] || [];
+  }
+
+  // 再判断 center_map 下的层级 (center_map：再按 level 细分)
+  if (area === "center_map") {
+    // 点的是省 -> 弹窗显示该气候片区下的城市列表
+    if (level === "province") {
+      return popupCityRegions[climate]?.[name.slice(0,2)] || [];
+    }
+    // 点的是城市 -> 弹窗只显示当前城市自己
+    if (level === "city") {
+      return name ? [name] : [];
+    }
+  }
+  return [];
+});
 
 // 环境因子类型（弹窗）
 const envFactorMap: Record<string, string[]> = {
@@ -80,6 +108,10 @@ let offsetY = 0;
 const popupRef = ref<HTMLElement | null>(null);
 
 const showRegionPopup = (regionData: any) => {
+  console.log("===== 弹窗页面收到 =====");
+  console.log("regionData =", regionData);
+  console.log("climate =", regionData.climate);
+  console.log("popupProvinceRegions", popupProvinceRegions[regionData.climate]);
   currentRegion.value = regionData;
 
   // 每次切换区域，清空已选内容
@@ -140,7 +172,7 @@ const envFactor = ref<string[]>([]);
 const experimentType = ref<string>("降雨-日照耦合实验");
 
 const handleRegionChange = (val: string[]) => {
-  const regionList = popupRegions[currentRegion.value.climate] || [];
+  const regionList = regionOptions.value;
   // console.log("regionList = ", regionList);
   // console.log("expLocation before = ", expLocation.value.length);
   // 修改区域选择
@@ -278,10 +310,10 @@ const handleStartSimulate = async () => {
                 :key="'ALL_REGIONS'"
               />
               <el-option
-                v-for="province in popupRegions[currentRegion.climate]"
-                :key="province"
-                :label="province"
-                :value="province"
+                v-for="region in regionOptions"
+                :key="region"
+                :label="region"
+                :value="region"
               />
             </el-select>
           </div>

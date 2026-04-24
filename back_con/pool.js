@@ -4,10 +4,10 @@ const mysql = require("mysql2/promise");
 
 const pool = mysql.createPool({
     host:"127.0.0.1",
-    port:3306,
+    port:3308,
     user:"root",
     password:"root",
-    database:"vue_admin",  // ← 改这里
+    database:"dunhuang_agent", 
     connectionLimit:15,
     dateStrings:true,
     charset:'utf8mb4',

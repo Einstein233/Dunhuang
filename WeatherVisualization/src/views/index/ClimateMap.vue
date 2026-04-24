@@ -102,7 +102,9 @@ const mapClick = (params: any) => {
     ...params.data,
     name: params.name,
     adcode: regionCodes[params.name]?.adcode,
+    level: regionCodes[params.name]?.level,
     climate: params.data.climate,
+    area: "bottom_map",
   });
 };
 

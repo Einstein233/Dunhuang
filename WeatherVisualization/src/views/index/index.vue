@@ -78,7 +78,11 @@ const showRegionPopup = (regionData: any) => {
       </div>
 
       <div class="contetn_center">
-        <CenterMap class="contetn_center_top" title="多环境要素站点分布图" />
+        <CenterMap 
+          class="contetn_center_top" 
+          title="多环境要素站点分布图" 
+          @showRegionPopup="showRegionPopup" 
+        />
           <!--      <Map @update="updateSelectedPoint" />-->
       </div>
 
