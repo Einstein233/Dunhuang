@@ -1,263 +1,310 @@
 <script setup lang="ts">
-
-import { ref, onBeforeUnmount, watch, computed } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import dayjs from "dayjs";
+import axios from "axios";
 import { RouterView } from "vue-router";
+import { storeToRefs } from "pinia";
+import { ElMessage } from "element-plus";
+
 import ScaleScreen from "@/components/scale-screen";
+import MessageContent from "@/components/Plugins/MessageContent";
+import { useSettingStore } from "@/stores/index";
+
 import Headers from "./header.vue";
 import Setting from "./setting.vue";
-import { useSettingStore } from "@/stores/index";
-import { storeToRefs } from "pinia";
-import MessageContent from "@/components/Plugins/MessageContent";
-import { ElSelect, ElOption } from "element-plus";
-import { popupProvinceRegions, popupCityRegions, countyCities, antiqueTypeList } from "./index/bottom.map";
-import axios from "axios";
+import { popupProvinceRegions, popupCityRegions } from "./index/bottom.map";
+
+type RegionPopupData = {
+  name?: string;
+  climate?: string;
+  level?: string;
+  area?: string;
+};
+
+type RegionDirectoryItem = {
+  province: string;
+  city: string;
+  station_code: string;
+  start_time: string;
+  end_time: string;
+  total_count: number;
+};
+
+type ExperimentQuerySummary = {
+  province: string;
+  city: string;
+  stationCode: string;
+  startDate: string;
+  endDate: string;
+  rowCount: number;
+  dataCoverageStart: string;
+  dataCoverageEnd: string;
+};
+
+type ExperimentRequestSummary = {
+  experimentType: string;
+  targetDays: number;
+};
+
+type ExperimentTypeOption = {
+  label: string;
+  value: "rain_solar" | "snow_freeze_thaw";
+};
+
+type ExperimentResponseData = {
+  query: ExperimentQuerySummary;
+  request: ExperimentRequestSummary;
+  plan: Record<string, any> | null;
+  hardwareSteps: Array<Record<string, any>>;
+};
+
+const BACKEND_BASE_URL = "http://localhost:3000";
+const DEFAULT_EXPERIMENT_TYPE: ExperimentTypeOption["value"] = "rain_solar";
 
 const settingStore = useSettingStore();
 const { isScale } = storeToRefs(settingStore);
 const wrapperStyle = {};
 
-const simulationResult = ref(null); // 保存后端返回的数据
+const showInfo = ref(false);
 const loading = ref(false);
+const regionLoading = ref(false);
+const popupRef = ref<HTMLElement | null>(null);
 
-// 判断当前点击的交互弹窗的地区是province还是city
-const regionOptions = computed(() => {
+const currentRegion = ref<RegionPopupData>({});
+const availableRegions = ref<RegionDirectoryItem[]>([]);
+const selectedStationCode = ref("");
+const dataTimeRange = ref<[string, string] | []>([]);
+const experimentType = ref<ExperimentTypeOption["value"]>(DEFAULT_EXPERIMENT_TYPE);
+const targetDays = ref(10);
+const simulationResult = ref<ExperimentResponseData | null>(null);
+
+const experimentTypeOptions: ExperimentTypeOption[] = [
+  { label: "降雨-日照耦合实验", value: "rain_solar" },
+  { label: "降雪-冻融耦合实验", value: "snow_freeze_thaw" },
+];
+
+const regionNameCandidates = computed(() => {
   const climate = currentRegion.value.climate;
   const level = currentRegion.value.level;
   const area = currentRegion.value.area;
   const name = currentRegion.value.name;
 
-  if (!climate || !area) return [];
+  if (!climate || !area) {
+    return availableRegions.value.map((item) => item.city);
+  }
 
-  // 先判断来源区域 bottom_map：按气候片区显示省
   if (area === "bottom_map") {
     return popupProvinceRegions[climate] || [];
   }
 
-  // 再判断 center_map 下的层级 (center_map：再按 level 细分)
   if (area === "center_map") {
-    // 点的是省 -> 弹窗显示该气候片区下的城市列表
     if (level === "province") {
-      return popupCityRegions[climate]?.[name.slice(0,2)] || [];
+      return popupCityRegions[climate]?.[name?.slice(0, 2) || ""] || [];
     }
-    // 点的是城市 -> 弹窗只显示当前城市自己
     if (level === "city") {
       return name ? [name] : [];
     }
   }
+
   return [];
 });
 
-// 环境因子类型（弹窗）
-const envFactorMap: Record<string, string[]> = {
-  "气温": ["max_temperature", "min_temperature", "avg_temperature"],
-  "降水": ["precipitation"],
-  "降雨": ["rain_sum"],
-  "降雪": ["snow_sum"],
-  "风速": ["max_continuous_wind_speed"],
-  "太阳辐照": ["shortwave_radiation_sum"],
-};
+const regionOptions = computed(() => {
+  const candidates = new Set(regionNameCandidates.value);
+  if (!candidates.size) {
+    return availableRegions.value;
+  }
 
-const regionNameMap: Record<string, string> = {
-  "北京": "beijing",
-  "天津": "tianjin",
-  "河北": "hebei",
-  "山东": "shandong",
-  "辽宁": "liaoning",
-  "吉林": "jilin",
-  "黑龙江": "heilongjiang",
-  "山西": "shan1xi",
-  "陕西": "shan3xi",
-  "河南": "henan",
-  "内蒙古": "neimenggu",
-  "宁夏": "ningxia",
-  "甘肃": "gansu",
-  "新疆": "xinjiang",
-  "青海": "qinghai",
-  "西藏": "xizang",
-  "江苏": "jiangsu",
-  "四川": "sichuan",
-  "台湾": "taiwan",
-  "福建": "fujian",
-  "上海": "shanghai",
-  "浙江": "zhejiang",
-  "安徽": "anhui",
-  "江西": "jiangxi",
-  "湖南": "hunan",
-  "湖北": "hubei",
-  "重庆": "chongqing",
-  "贵州": "guizhou",
-  "广东": "guangdong",
-  "广西": "guangxi",
-  "澳门": "aomen",
-  "云南": "yunnan",
-  "香港": "xianggang"
-}
+  return availableRegions.value.filter((item) => {
+    return candidates.has(item.city) || candidates.has(item.province);
+  });
+});
 
-const envFactorList = Object.keys(envFactorMap);
-const experimentTypeOptions = ["降雨-日照耦合实验", "降雪-冻融耦合实验"];
+const selectedRegionMeta = computed(() => {
+  return regionOptions.value.find((item) => item.station_code === selectedStationCode.value) || null;
+});
 
-// 弹窗设计
-const showInfo = ref(false);
-const currentRegion = ref({});
-const popupLeft = ref(125);  // 弹窗初始位置
-const popupTop = ref(55);  // 弹窗初始位置
+const tableColumns = computed(() => {
+  const firstRow = simulationResult.value?.hardwareSteps?.[0];
+  return firstRow ? Object.keys(firstRow) : [];
+});
 
+const popupLeft = ref(125);
+const popupTop = ref(55);
 let dragging = false;
 let offsetX = 0;
 let offsetY = 0;
-const popupRef = ref<HTMLElement | null>(null);
 
-const showRegionPopup = (regionData: any) => {
-  console.log("===== 弹窗页面收到 =====");
-  console.log("regionData =", regionData);
-  console.log("climate =", regionData.climate);
-  console.log("popupProvinceRegions", popupProvinceRegions[regionData.climate]);
-  currentRegion.value = regionData;
-
-  // 每次切换区域，清空已选内容
-  expLocation.value = [];
-  dataTimeRange.value = [new Date(), new Date()];
-  simulateTimeYear.value = [];
-  simulateTimeMonth.value = [];
-  expTimeMonth.value = [];
-  expTimeDay.value = [];
-  envFactor.value = [];
-  experimentType.value = "降雨-日照耦合实验";
-  simulationResult.value = null;
-  
-  if (!showInfo.value) {
-    popupLeft.value = 125;  // 弹窗初始位置
-    popupTop.value = 55;    // 弹窗初始位置
-  }
-  showInfo.value = true;
-  // console.log("climateRegions: ", popupRegions[currentRegion.value.climate]);
-  // console.log("currentRegions: ", currentRegion.value.climate);
-};
-
-const closeRegionPopup = () => {
-  showInfo.value = false;
-};
-
-const startDrag = (e: MouseEvent) => {
+function startDrag(event: MouseEvent) {
   if (!popupRef.value) return;
   dragging = true;
-  offsetX = e.clientX - popupLeft.value;
-  offsetY = e.clientY - popupTop.value;
-  document.addEventListener('mousemove', onDrag);
-  document.addEventListener('mouseup', stopDrag);
-};
-const onDrag = (e: MouseEvent) => {
+  offsetX = event.clientX - popupLeft.value;
+  offsetY = event.clientY - popupTop.value;
+  document.addEventListener("mousemove", onDrag);
+  document.addEventListener("mouseup", stopDrag);
+}
+
+function onDrag(event: MouseEvent) {
   if (!dragging) return;
-  popupLeft.value = e.clientX - offsetX;
-  popupTop.value = e.clientY - offsetY;
-};
-const stopDrag = () => {
+  popupLeft.value = event.clientX - offsetX;
+  popupTop.value = event.clientY - offsetY;
+}
+
+function stopDrag() {
   dragging = false;
-  document.removeEventListener('mousemove', onDrag);
-  document.removeEventListener('mouseup', stopDrag);
-};
+  document.removeEventListener("mousemove", onDrag);
+  document.removeEventListener("mouseup", stopDrag);
+}
+
 onBeforeUnmount(() => {
-  document.removeEventListener('mousemove', onDrag);
-  document.removeEventListener('mouseup', stopDrag);
+  document.removeEventListener("mousemove", onDrag);
+  document.removeEventListener("mouseup", stopDrag);
 });
 
-// 弹窗内容
-const expLocation = ref<string[]>([]);
-const expTimeMonth = ref(); 
-const expTimeDay = ref();  
-const dataTimeRange = ref<[Date, Date]>([new Date(), new Date()]);
-const simulateTimeYear = ref(); 
-const simulateTimeMonth = ref();   
-const envFactor = ref<string[]>([]); 
-const experimentType = ref<string>("降雨-日照耦合实验");
+function getDefaultDateRange(region: RegionDirectoryItem): [string, string] {
+  const minDate = dayjs(region.start_time);
+  const maxDate = dayjs(region.end_time);
+  const latestOneYearStart = maxDate.subtract(364, "day");
+  const startDate = latestOneYearStart.isAfter(minDate) ? latestOneYearStart : minDate;
 
-const handleRegionChange = (val: string[]) => {
-  const regionList = regionOptions.value;
-  // console.log("regionList = ", regionList);
-  // console.log("expLocation before = ", expLocation.value.length);
-  // 修改区域选择
-  if (val.includes("ALL_REGIONS")) {
-    if(expLocation.value.length < regionList.length){
-      expLocation.value = [ ...regionList];
-    } else {
-      expLocation.value = [];
+  return [
+    startDate.format("YYYY-MM-DD"),
+    maxDate.format("YYYY-MM-DD"),
+  ];
+}
+
+async function loadAvailableRegions() {
+  regionLoading.value = true;
+  try {
+    const response = await axios.get(`${BACKEND_BASE_URL}/experiment/regions`);
+    if (response.data.code !== 0) {
+      throw new Error(response.data.msg || "获取地区失败");
     }
-  } 
-};
+    availableRegions.value = response.data.data || [];
+  } catch (error: any) {
+    ElMessage.error(error?.message || "获取地区失败");
+  } finally {
+    regionLoading.value = false;
+  }
+}
 
-const handleEnvFactorChange = (val: string[]) => {
-  const allList = [...envFactorList];
-  // console.log("regionList = ", allList);
-  // console.log("envFactor before = ", envFactor.value.length);
-  // 修改区域选择
-  if (val.includes("ALL_ENV")) {
-    if(envFactor.value.length < allList.length){
-      envFactor.value = [ ...allList];
-    } else {
-      envFactor.value = [];
-    }
-  } 
-};
-
-// 控制按钮的高亮和禁用
-const isClearButtonActive = ref(false);
-const isStartButtonActive = ref(false);
-
-// 清空选择
-const clearSelection = () => {
-  expLocation.value = [];
-  envFactor.value = [];
-  dataTimeRange.value = [new Date(), new Date()];
-  expTimeDay.value = [];
-  expTimeMonth.value = [];
-  simulateTimeMonth.value = [];
-  simulateTimeYear.value = [];
-  experimentType.value = "降雨-日照耦合实验";
+function resetFormState() {
+  selectedStationCode.value = "";
+  dataTimeRange.value = [];
+  experimentType.value = DEFAULT_EXPERIMENT_TYPE;
+  targetDays.value = 10;
   simulationResult.value = null;
-};
+}
 
-const handleStartSimulate = async () => {
+async function showRegionPopup(regionData: RegionPopupData) {
+  currentRegion.value = regionData || {};
+  resetFormState();
 
-  loading.value = true; // 开始加载
+  if (!showInfo.value) {
+    popupLeft.value = 125;
+    popupTop.value = 55;
+  }
 
-  const envFactorsForParams = Array.from(new Set(
-    envFactor.value.flatMap(item => envFactorMap[item] || [])
-  ));
+  showInfo.value = true;
 
-  const regionsForParams = expLocation.value.map(name => regionNameMap[name] || name);
+  if (!availableRegions.value.length) {
+    await loadAvailableRegions();
+  }
+}
 
-  const params = {
-    regions: regionsForParams,
-    dataRange: dataTimeRange.value,
-    simulateYear: simulateTimeYear.value,
-    simulateMonth: simulateTimeMonth.value,
-    expMonth: expTimeMonth.value,
-    expDay: expTimeDay.value,
-    envFactors: envFactorsForParams,
-    experimentType: experimentType.value
-  };
+function closeRegionPopup() {
+  showInfo.value = false;
+}
+
+function clearSelection() {
+  simulationResult.value = null;
+  experimentType.value = DEFAULT_EXPERIMENT_TYPE;
+  targetDays.value = 10;
+
+  if (selectedRegionMeta.value) {
+    dataTimeRange.value = getDefaultDateRange(selectedRegionMeta.value);
+  } else {
+    selectedStationCode.value = "";
+    dataTimeRange.value = [];
+  }
+}
+
+async function handleStartSimulate() {
+  const region = selectedRegionMeta.value;
+  const [startDate, endDate] = dataTimeRange.value;
+
+  if (!region) {
+    ElMessage.warning("请先选择待模拟地区");
+    return;
+  }
+
+  if (!startDate || !endDate) {
+    ElMessage.warning("请先选择自然气候时间窗口");
+    return;
+  }
+
+  loading.value = true;
+  simulationResult.value = null;
 
   try {
-    // 替换成你的后端API地址
-    console.log("params = ", params);
-    const resp = await axios.post('http://localhost:3000/experiment/run', params);
+    const response = await axios.post(`${BACKEND_BASE_URL}/experiment/run`, {
+      city: region.city,
+      stationCode: region.station_code,
+      startDate,
+      endDate,
+      experimentType: experimentType.value,
+      targetDays: targetDays.value,
+    });
 
-    // 后端会返回预测结果
-    const result = resp.data;
-
-    if(result.code === 0) {
-      simulationResult.value = result.data; // 保存数据
+    if (response.data.code !== 0) {
+      throw new Error(response.data.msg || "等效方案计算失败");
     }
 
-    // 这里可以在页面上展示结果
-    console.log("预测结果：", result);
-  } catch (e) {
-    // 错误处理
-    console.error("实验模拟失败", e);
+    simulationResult.value = response.data.data;
+    ElMessage.success("等效方案计算完成");
+  } catch (error: any) {
+    ElMessage.error(error?.message || "等效方案计算失败");
+  } finally {
+    loading.value = false;
   }
-  loading.value = false; // 结束加载
-};
+}
 
+watch(
+  () => regionOptions.value,
+  (options) => {
+    if (!showInfo.value) return;
+
+    if (!options.length) {
+      selectedStationCode.value = "";
+      dataTimeRange.value = [];
+      return;
+    }
+
+    const hasCurrentSelection = options.some((item) => item.station_code === selectedStationCode.value);
+    if (hasCurrentSelection) {
+      return;
+    }
+
+    const matchedByMap = options.find((item) => {
+      return item.city === currentRegion.value.name || item.province === currentRegion.value.name;
+    });
+    selectedStationCode.value = (matchedByMap || options[0]).station_code;
+  },
+  { immediate: true }
+);
+
+watch(selectedStationCode, () => {
+  simulationResult.value = null;
+  if (selectedRegionMeta.value) {
+    dataTimeRange.value = getDefaultDateRange(selectedRegionMeta.value);
+  } else {
+    dataTimeRange.value = [];
+  }
+});
+
+onMounted(() => {
+  loadAvailableRegions();
+});
 </script>
 
 <template>
@@ -275,389 +322,412 @@ const handleStartSimulate = async () => {
   >
     <div class="content_wrap">
       <Headers />
-      <!-- 监听 showRegionPopup 事件 -->
       <RouterView @showRegionPopup="showRegionPopup" />
       <MessageContent />
     </div>
 
-    <!-- 弹窗统一渲染到这里 -->
     <Teleport to="body">
-      <div 
-        v-if="showInfo" 
-        class="popup"
+      <div
+        v-if="showInfo"
         ref="popupRef"
-        :style="{ left: popupLeft + 'px', top: popupTop + 'px' }"
+        class="popup"
+        :style="{ left: `${popupLeft}px`, top: `${popupTop}px` }"
       >
         <div class="popup-header" @mousedown="startDrag">
-          <span class="popup-title">劣化模拟实验设置</span>
+          <span class="popup-title">等效方案计算设置</span>
           <span class="popup-close" @click="closeRegionPopup">×</span>
         </div>
-        <div class="popup-upper">
-          <div class="config-row">
-            <span class="label">实验地区：</span>
-            <el-select 
-              v-model="expLocation" 
-              multiple
-              style="width: 230px;"
-              placeholder="选项"
-              filterable
-              collapse-tags
-              @change="handleRegionChange"
-            >
-              <el-option
-                label="全选"
-                :value="'ALL_REGIONS'"
-                :key="'ALL_REGIONS'"
-              />
-              <el-option
-                v-for="region in regionOptions"
-                :key="region"
-                :label="region"
-                :value="region"
-              />
-            </el-select>
-          </div>
 
-          <div class="config-row">
-            <span class="label">数据时间：</span>
-            <div style="width: 230px">
+        <div class="popup-upper">
+          <div class="config-grid">
+            <div class="config-item">
+              <span class="label">待模拟地区</span>
+              <el-select
+                v-model="selectedStationCode"
+                :loading="regionLoading"
+                placeholder="请选择地区"
+                style="width: 100%"
+                filterable
+              >
+                <el-option
+                  v-for="item in regionOptions"
+                  :key="item.station_code"
+                  :label="item.province === item.city ? item.city : `${item.province} / ${item.city}`"
+                  :value="item.station_code"
+                />
+              </el-select>
+              <div v-if="selectedRegionMeta" class="hint-line">
+                数据覆盖范围：{{ selectedRegionMeta.start_time }} 至 {{ selectedRegionMeta.end_time }}
+              </div>
+              <div v-else class="hint-line warning-text">
+                当前双击区域暂无可用气候数据
+              </div>
+            </div>
+
+            <div class="config-item">
+              <span class="label">自然气候时间窗口</span>
               <el-date-picker
                 v-model="dataTimeRange"
                 type="daterange"
                 range-separator="至"
                 start-placeholder="开始日期"
                 end-placeholder="结束日期"
-                format="YYYY-MM-DD"
                 value-format="YYYY-MM-DD"
-                style="width: 100%;" 
+                format="YYYY-MM-DD"
+                style="width: 100%"
               />
+              <div class="hint-line">
+                默认使用该地区最近一年的可用数据窗口，你也可以手动调整。
+              </div>
+            </div>
+
+            <div class="config-item">
+              <span class="label">实验类型</span>
+              <el-select
+                v-model="experimentType"
+                placeholder="请选择实验类型"
+                style="width: 100%"
+              >
+                <el-option
+                  v-for="item in experimentTypeOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </div>
+
+            <div class="config-item">
+              <span class="label">目标实验室时长</span>
+              <div class="duration-row">
+                <el-input-number
+                  v-model="targetDays"
+                  :min="1"
+                  :max="365"
+                  :step="1"
+                  step-strictly
+                  style="width: 180px"
+                />
+                <span class="duration-unit">天</span>
+              </div>
+              <div class="hint-line">
+                先以“天”为第一版时长单位，后续可以再扩展成更细粒度。
+              </div>
             </div>
           </div>
-
-          <div class="config-row">
-            <span class="label">模拟时间：</span>
-            <el-select v-model="simulateTimeYear" placeholder="年数" style="width: 111px; margin-right: 8px;">
-              <el-option
-                v-for="num in 120"
-                :key="num"
-                :value="num"
-                :label="num + ' 年'"
-              />
-            </el-select>
-            <el-select v-model="simulateTimeMonth" placeholder="月数" style="width: 111px;">
-              <el-option
-                v-for="num in 11"
-                :key="num"
-                :value="num"
-                :label="num + ' 月'"
-              />
-            </el-select>
-          </div>
-
-          <div class="config-row">
-            <span class="label">实验时间：</span>
-            <el-select v-model="expTimeMonth" placeholder="月数" style="width: 111px; margin-right: 8px;">
-              <el-option
-                v-for="num in 120"
-                :key="num"
-                :value="num"
-                :label="num + ' 月'"
-              />
-            </el-select>
-            <el-select v-model="expTimeDay" placeholder="天数" style="width: 111px;">
-              <el-option
-                v-for="num in 29"
-                :key="num"
-                :value="num"
-                :label="num + ' 天'"
-              />
-            </el-select>
-          </div>
-
-          <div class="config-row">
-            <span class="label">环境因子：</span>
-            <el-select
-              v-model="envFactor"
-              multiple
-              style="width: 230px;"
-              placeholder="选项"
-              filterable
-              collapse-tags
-              @change="handleEnvFactorChange"
-            >
-              <el-option
-                label="全选"
-                :value="'ALL_ENV'"
-                :key="'ALL_ENV'"
-              />
-              <el-option
-                v-for="item in envFactorList"
-                :key="item"
-                :label="item"
-                :value="item"
-              />
-            </el-select>
-          </div>
-
-          <div class="config-row">
-            <span class="label">实验类型：</span>
-            <el-select v-model="experimentType" style="width: 230px;" placeholder="选项">
-              <el-option
-                v-for="item in experimentTypeOptions"
-                :key="item"
-                :label="item"
-                :value="item"
-              />
-            </el-select>
-          </div>
-
         </div>
+
         <div class="popup-middle">
           <template v-if="loading">
             <div class="loading-spinner">
               <div class="spinner"></div>
-              <div style="margin-top:10px;color:#b67e2b;">正在计算，请稍候…</div>
+              <div class="loading-text">正在生成等效方案，请稍候...</div>
             </div>
           </template>
+
           <template v-else-if="simulationResult">
-            <div class="scheme-card">
-              <div v-if="simulationResult.season_flags.冬季舱">
-                <strong class="capsule-line">冬季舱</strong>
-                <div class="factor-line">温度等级：{{ simulationResult.winter_detail.温度等级 }}（时长：{{ simulationResult.winter_detail.温度时长 }}小时）</div>
-                <div class="factor-line">降雪等级：{{ simulationResult.winter_detail.降雪等级 }}（时长：{{ simulationResult.winter_detail.降雪时长 }}小时）</div>
-                <div class="factor-line">日照等级：{{ simulationResult.winter_detail.日照等级 }}（时长：{{ simulationResult.winter_detail.日照时长 }}小时）</div>
+            <div class="result-wrap">
+              <div class="result-summary">
+                <div class="summary-card">
+                  <span class="summary-label">地区</span>
+                  <strong>{{ simulationResult.query.province }} / {{ simulationResult.query.city }}</strong>
+                </div>
+                <div class="summary-card">
+                  <span class="summary-label">数据窗口</span>
+                  <strong>{{ simulationResult.query.startDate }} 至 {{ simulationResult.query.endDate }}</strong>
+                </div>
+                <div class="summary-card">
+                  <span class="summary-label">原始记录数</span>
+                  <strong>{{ simulationResult.query.rowCount }}</strong>
+                </div>
+                <div class="summary-card">
+                  <span class="summary-label">实验类型</span>
+                  <strong>{{ simulationResult.request.experimentType }}</strong>
+                </div>
+                <div class="summary-card">
+                  <span class="summary-label">目标时长</span>
+                  <strong>{{ simulationResult.request.targetDays }} 天</strong>
+                </div>
+                <div class="summary-card">
+                  <span class="summary-label">表格行数</span>
+                  <strong>{{ simulationResult.hardwareSteps.length }}</strong>
+                </div>
               </div>
-              <div v-if="simulationResult.season_flags.夏季舱">
-                <strong class="capsule-line">夏季舱</strong>
-                <div class="factor-line">温度等级：{{ simulationResult.summer_detail.温度等级 }}（时长：{{ simulationResult.summer_detail.温度时长 }}小时）</div>
-                <div class="factor-line">日照等级：{{ simulationResult.summer_detail.日照等级 }}（时长：{{ simulationResult.summer_detail.日照时长 }}小时）</div>
+
+              <div v-if="simulationResult.hardwareSteps.length" class="result-table">
+                <el-table
+                  :data="simulationResult.hardwareSteps"
+                  border
+                  stripe
+                  height="100%"
+                  size="small"
+                >
+                  <el-table-column
+                    v-for="column in tableColumns"
+                    :key="column"
+                    :prop="column"
+                    :label="column"
+                    min-width="140"
+                    show-overflow-tooltip
+                  />
+                </el-table>
               </div>
-              <div v-if="simulationResult.season_flags.风雨舱">
-                <strong class="capsule-line">风雨舱</strong>
-                <div class="factor-line">温度等级：{{ simulationResult.windrain_detail.温度等级 }}（时长：{{ simulationResult.windrain_detail.温度时长 }}小时）</div>
-                <div class="factor-line">降雨等级：{{ simulationResult.windrain_detail.降雨等级 }}（时长：{{ simulationResult.windrain_detail.降雨时长 }}小时）</div>
-                <div class="factor-line">风速等级：{{ simulationResult.windrain_detail.风速等级 }}（时长：{{ simulationResult.windrain_detail.刮风时长 }}小时）</div>
+
+              <div v-else class="placeholder">
+                当前方案已计算完成，但暂时没有可展示的表格数据。
               </div>
             </div>
           </template>
+
           <template v-else>
-            <div class="placeholder">（模拟方案展示）</div>
+            <div class="placeholder">
+              双击地图区域后，选择地区与时间窗口，即可在这里看到等效方案表格。
+            </div>
           </template>
         </div>
-      <div class="popup-lower">
-        <el-button 
-          type="primary" 
-          class="start-btn"
-          :disabled="isStartButtonActive"
-          @click="handleStartSimulate"
-          >开始模拟
-        </el-button>
-        <el-button 
-          type="primary" 
-          class="clear-btn"
-          :disabled="isClearButtonActive"
-          @click="clearSelection"
-          >清空
-        </el-button>
-      </div>
+
+        <div class="popup-lower">
+          <el-button class="action-btn" @click="clearSelection">重置</el-button>
+          <el-button
+            type="primary"
+            class="action-btn"
+            :loading="loading"
+            :disabled="!selectedRegionMeta || !dataTimeRange.length"
+            @click="handleStartSimulate"
+          >
+            开始计算
+          </el-button>
+        </div>
       </div>
     </Teleport>
   </scale-screen>
-  <Setting />
 
+  <Setting />
 </template>
 
-
 <style lang="scss" scoped>
-
 .content_wrap {
   width: 100%;
   height: 100%;
-  padding: 16px 16px 16px 16px;
+  padding: 16px;
   box-sizing: border-box;
 }
 
 .popup {
   position: fixed;
-  min-width: 350px;
-  min-height: 601px;
-  background: #fff;
-  color: #000;
-  border: 1px solid #333;
-  border-radius: 10px;
+  width: min(88vw, 980px);
+  min-width: 760px;
+  min-height: 720px;
+  max-height: 86vh;
+  background: rgba(255, 251, 246, 0.98);
+  color: #2d210f;
+  border: 1px solid rgba(160, 112, 48, 0.28);
+  border-radius: 18px;
   z-index: 100;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  box-shadow: 0 18px 50px rgba(45, 27, 5, 0.22);
   display: flex;
   flex-direction: column;
   resize: both;
-  overflow: auto;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
 }
 
 .popup-header {
-  height: 50px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 18px;
-  background: #f6f6f6;
-  border-bottom: 1px solid #eee;
-  cursor: move;            // 鼠标为可拖拽
+  padding: 0 20px;
+  background: linear-gradient(90deg, rgba(250, 235, 214, 0.98), rgba(255, 247, 236, 0.98));
+  border-bottom: 1px solid rgba(188, 144, 79, 0.18);
+  cursor: move;
   user-select: none;
 }
 
 .popup-title {
-  font-size: 23px;
-  font-weight: bold;
-  color: #b16a36;        
+  font-size: 24px;
+  font-weight: 700;
+  color: #9c5a1f;
+  letter-spacing: 1px;
 }
 
 .popup-close {
-  font-size: 28px;
-  font-weight: bold;
-  height: 45px;
-  color: #b16a36;
+  font-size: 30px;
+  color: #9c5a1f;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
 }
 
 .popup-close:hover {
-  color: #d64620;
+  color: #d0511d;
 }
 
-/* 内容区弹性排布 */
 .popup-upper {
-  padding-top: 20px;
-  padding-right: 20px;
-  padding-left: 5px;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(188, 144, 79, 0.14);
+  background: rgba(255, 250, 243, 0.88);
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 20px;
+}
+
+.config-item {
   display: flex;
-  font-size: 12px;
   flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
+  gap: 8px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #7a4a16;
+}
+
+.hint-line {
+  min-height: 20px;
+  font-size: 12px;
+  color: #87663a;
+  line-height: 1.6;
+}
+
+.warning-text {
+  color: #bf5b2b;
+}
+
+.duration-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.duration-unit {
+  font-size: 14px;
+  color: #7a4a16;
 }
 
 .popup-middle {
-  border-top: 1px solid #f1ece7;
-  min-height: 240px;
+  flex: 1;
+  min-height: 0;
+  padding: 18px 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 248, 239, 0.96));
+}
+
+.result-wrap {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.result-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.summary-card {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(247, 236, 217, 0.9);
+  border: 1px solid rgba(186, 143, 83, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #8d6a40;
+}
+
+.summary-card strong {
+  font-size: 14px;
+  color: #4f3415;
+  line-height: 1.5;
+}
+
+.result-table {
+  flex: 1;
+  min-height: 260px;
+}
+
+.placeholder {
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
-  color: #888;
+  text-align: center;
+  color: #8c7354;
+  font-size: 14px;
+  line-height: 1.8;
+  padding: 24px;
+  border: 1px dashed rgba(186, 143, 83, 0.28);
+  border-radius: 16px;
+  background: rgba(252, 247, 240, 0.9);
 }
 
 .popup-lower {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
-  padding: 10px 0 10px 0;
-  border-top: 1px solid #f1ece7;
-  background: #ffffff;
+  gap: 12px;
+  padding: 14px 24px 18px;
+  border-top: 1px solid rgba(188, 144, 79, 0.14);
+  background: rgba(255, 252, 248, 0.96);
 }
 
-.config-row {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  min-height: 30px;
+.action-btn {
+  min-width: 112px;
 }
 
-.label {
-  min-width: 100px;
-  color: #6b4300;
-  font-size: 17px;
-  font-weight: 500;
-  margin-right: 15px;
-  text-align: right;
-}
-
-.start-btn {
-  font-size: 16px;
-  padding: 18px 40px;
-  margin-top: 5px;
-  margin-bottom: 5px;
-  margin-right: 15px;
-  border-radius: 6px;
-  font-weight: 500;
-  letter-spacing: 3px;
-  background-color: #e54d42; // 明亮的红色
-  color: #fff;               // 白色字体
-  border: none;              // 移除默认边框（可选）
-  box-shadow: 0 2px 10px rgba(229,77,66,0.08); // 可选，增加质感
-  transition: background 0.2s;
-}
-
-.clear-btn {
-  font-size: 16px;
-  padding: 18px 40px;
-  margin-top: 5px;
-  margin-bottom: 5px;
-  border-radius: 6px;
-  font-weight: 500;
-  letter-spacing: 3px;
-  background-color: #a19e9d; // 明亮的红色
-  color: #fff;               // 白色字体
-  border: none;              // 移除默认边框（可选）
-  box-shadow: 0 2px 10px rgba(229,77,66,0.08); // 可选，增加质感
-  transition: background 0.2s;
-}
-
-.start-btn:hover {
-  background-color: #b33427; // 深一点的红色（悬停效果）
-}
-
-// 模拟实验结果展示设计
-.scheme-card {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: #ffffff;
-  width: 100%;
-  color: #5e412f;
-  font-size: 15px;
-}
-.scheme-card h3 {
-  // margin-bottom: 10px;
-  color: #c95d3c;
-}
-.factor-line {
-  margin-left: 10px;
-  margin-bottom: 3px;
-  line-height: 1.6;
-}
-.capsule-line {
-  margin-left: 10px;
-}
-strong {
-  font-size: 17px;
-  color: #6b4300;
-  margin-top: 5px;
-  display: block;
-}
-
-// loading 加载设计
 .loading-spinner {
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 100px;
+  color: #8b662f;
 }
 
 .spinner {
-  border: 6px solid #f3e3c0;
-  border-top: 6px solid #b67e2b;  // 沙漠金色
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  width: 46px;
-  height: 46px;
-  animation: spin 1.1s linear infinite;
-  margin-bottom: 8px;
+  border: 4px solid rgba(210, 154, 79, 0.2);
+  border-top-color: #c4741f;
+  animation: spin 0.9s linear infinite;
+}
+
+.loading-text {
+  margin-top: 14px;
+  font-size: 14px;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg);}
-  100% { transform: rotate(360deg);}
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
+@media (max-width: 980px) {
+  .popup {
+    min-width: 92vw;
+    width: 92vw;
+    min-height: 80vh;
+  }
+
+  .config-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .result-summary {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

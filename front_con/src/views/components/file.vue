@@ -141,6 +141,10 @@ export default {
           label: '平均气温',
         },
         {
+          value: 'relativehumidity_2m',
+          label: '相对湿度',
+        },
+        {
           value: 'avg_temperature_attribute',
           label: '平均气温属性',
         },
@@ -207,14 +211,6 @@ export default {
         {
           value: 'min_temperature_attribute',
           label: '最低气温属性',
-        },
-        {
-          value: 'precipitation',
-          label: '降水量',
-        },
-        {
-          value: 'precipitation_attribute',
-          label: '降水量属性',
         },
         {
           value: 'snow_depth',

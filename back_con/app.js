@@ -10,6 +10,7 @@ const testsRouter = require("./router/tests.js");
 const componentsRouter = require("./router/components.js");
 const weatherRouter = require("./router/weather.js");
 const experimentRouter = require("./router/experiment.js");
+const autoscrapRouter = require("./router/autoscrap.js");
 
 const server = express();
 server.listen(3000);
@@ -43,5 +44,6 @@ server.use("/tests", testsRouter);
 server.use("/components", componentsRouter);
 server.use("/weather", weatherRouter);
 server.use("/experiment", experimentRouter);
+server.use("/autoscrap", autoscrapRouter);
 
 console.log("后端接口启动成功");

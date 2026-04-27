@@ -14,12 +14,10 @@ const iconvlite = require('iconv-lite');
 const OPENMETEO_FIELD_MAP = {
   'time':                        'record_time',
   'temperature_2m (°c)':         'avg_temperature',
-  'precipitation (mm)':          'precipitation',
+  'relativehumidity_2m (%)':     'relativehumidity_2m',
   'rain (mm)':                   'rain_sum',
   'snowfall (cm)':               'snow_sum',          // cm → mm (×10)
   'windspeed_10m (m/s)':         'max_continuous_wind_speed',
-  'winddirection_10m (°)':       'winddirection_dominant',
-  'windgusts_10m (m/s)':         'windgusts_max',
   'shortwave_radiation (w/m²)':  'shortwave_radiation_sum',
   // latitude, longitude, elevation, utc_offset_seconds,
   // timezone, timezone_abbreviation は全て無視（weather_dataに存在しない）
@@ -66,7 +64,7 @@ function parseCSVWithHeaderRow(filePath, headerRowIndex = 1) {
 
     // 自动检测：找包含最多气象关键词的非空行
     function autoDetectHeaderRow() {
-      const keywords = ['time','date','temp','precip','rain','snow','wind','radiation'];
+      const keywords = ['time','date','temp','humidity','rain','snow','wind','radiation'];
       let bestIdx = 0, bestScore = -1;
       for (let i = 0; i < Math.min(allLines.length, 15); i++) {
         if (!allLines[i].trim()) continue;
@@ -183,6 +181,111 @@ async function batchInsertWeatherData(fields, rows, res, req) {
   return inserted;
 }
 
+async function ensureStationCode(province, city) {
+  const { result: existing } = await pools({
+    sql: 'SELECT station_code FROM station_info WHERE province=? AND city=? AND granularity=2 LIMIT 1',
+    val: [province, city],
+    run: true
+  });
+
+  if (existing && existing.length > 0) return existing[0].station_code;
+
+  const { result: maxRow } = await pools({
+    sql: 'SELECT station_code FROM station_info ORDER BY station_code DESC LIMIT 1',
+    run: true
+  });
+
+  let nextNum = 1;
+  if (maxRow && maxRow.length > 0) {
+    const num = parseInt(String(maxRow[0].station_code).replace(/\D/g, ''), 10);
+    if (!isNaN(num)) nextNum = num + 1;
+  }
+
+  const stationCode = 'ST' + String(nextNum).padStart(6, '0');
+  await pools({
+    sql: 'INSERT INTO station_info (station_code, province, city, granularity) VALUES (?,?,?,2)',
+    val: [stationCode, province, city],
+    run: true
+  });
+  return stationCode;
+}
+
+function appendConstantField(fields, rows, fieldName, fieldValue) {
+  if (fields.includes(fieldName)) return;
+  fields.push(fieldName);
+  rows.forEach(row => row.push(fieldValue));
+}
+
+function collectStationPairs(fields, rows) {
+  const stationIdx = fields.indexOf('station_code');
+  const granularityIdx = fields.indexOf('granularity');
+  if (stationIdx === -1 || granularityIdx === -1) return [];
+
+  const dedup = new Map();
+  rows.forEach(row => {
+    const stationCode = row[stationIdx];
+    const granularity = row[granularityIdx];
+    if (!stationCode || granularity === null || granularity === undefined || granularity === '') return;
+    dedup.set(`${stationCode}|${granularity}`, {
+      station_code: String(stationCode),
+      granularity: Number(granularity)
+    });
+  });
+  return Array.from(dedup.values());
+}
+
+async function syncWeatherDirectoryForPairs(pairs) {
+  for (const pair of pairs) {
+    const { result } = await pools({
+      sql: `
+        SELECT
+          si.province,
+          si.city,
+          wd.station_code,
+          wd.granularity,
+          MIN(wd.record_time) AS start_time,
+          MAX(wd.record_time) AS end_time,
+          COUNT(*) AS total_count
+        FROM weather_data wd
+        JOIN station_info si
+          ON si.station_code = wd.station_code
+         AND si.granularity = wd.granularity
+        WHERE wd.station_code = ?
+          AND wd.granularity = ?
+        GROUP BY si.province, si.city, wd.station_code, wd.granularity
+      `,
+      val: [pair.station_code, pair.granularity],
+      run: true
+    });
+
+    if (!result || result.length === 0) continue;
+
+    const row = result[0];
+    await pools({
+      sql: `
+        INSERT INTO weather_directory
+          (province, city, station_code, granularity, start_time, end_time, total_count)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+          start_time = VALUES(start_time),
+          end_time = VALUES(end_time),
+          total_count = VALUES(total_count),
+          update_time = CURRENT_TIMESTAMP
+      `,
+      val: [
+        row.province,
+        row.city,
+        row.station_code,
+        row.granularity,
+        row.start_time,
+        row.end_time,
+        row.total_count
+      ],
+      run: true
+    });
+  }
+}
+
 // ══ addFile ═══════════════════════════════════════════════════
 router.post("/addFile", async (req, res) => {
   const sql = "INSERT INTO files(val,type) VALUES (?,?)";
@@ -231,39 +334,8 @@ router.post("/addFiledata", async (req, res) => {
         console.log(`[addFiledata] 元数据:`, meta);
 
         // ── 自动查找或创建 station_code ───────────────────────
-        const { result: existing } = await pools({
-          sql: 'SELECT station_code FROM station_info WHERE province=? AND city=? AND granularity=2 LIMIT 1',
-          val: [stationProvince, stationCity],
-          run: true
-        });
-
-        let stationCode;
-        if (existing && existing.length > 0) {
-          // 城市已存在，复用编码
-          stationCode = existing[0].station_code;
-          console.log(`[addFiledata] 复用现有站点编码: ${stationCode}`);
-        } else {
-          // 新城市，自动生成下一个编码
-          const { result: maxRow } = await pools({
-            sql: "SELECT station_code FROM station_info ORDER BY station_code DESC LIMIT 1",
-            run: true
-          });
-          let nextNum = 1;
-          if (maxRow && maxRow.length > 0) {
-            const lastCode = maxRow[0].station_code; // e.g. "ST000003"
-            const num = parseInt(lastCode.replace(/\D/g, ''), 10);
-            if (!isNaN(num)) nextNum = num + 1;
-          }
-          stationCode = 'ST' + String(nextNum).padStart(6, '0');
-
-          // 写入 station_info
-          await pools({
-            sql: 'INSERT INTO station_info (station_code, province, city, granularity) VALUES (?,?,?,2)',
-            val: [stationCode, stationProvince, stationCity],
-            run: true
-          });
-          console.log(`[addFiledata] 新站点已注册: ${stationCode} ${stationProvince} ${stationCity}`);
-        }
+        const stationCode = await ensureStationCode(stationProvince, stationCity);
+        console.log(`[addFiledata] Open-Meteo 站点编码: ${stationCode} ${stationProvince} ${stationCity}`);
 
         // 确定要插入的字段
         const fields = ['station_code', 'granularity'];
@@ -293,6 +365,7 @@ router.post("/addFiledata", async (req, res) => {
         });
 
         const inserted = await batchInsertWeatherData(fields, rows, res, req);
+        await syncWeatherDirectoryForPairs([{ station_code: stationCode, granularity: 2 }]);
         console.log(`[addFiledata] 插入完成，处理 ${inserted} 行`);
         return res.send({ code: 0, msg: `上传成功，处理 ${rows.length} 行数据` });
 
@@ -314,8 +387,8 @@ router.post("/addFiledata", async (req, res) => {
 
         // weather_data 中实际存在的字段（用于校验）
         const VALID_DB_FIELDS = new Set([
-          'record_time', 'avg_temperature', 'precipitation', 'rain_sum', 'snow_sum',
-          'max_continuous_wind_speed', 'windgusts_max', 'winddirection_dominant',
+          'record_time', 'avg_temperature', 'relativehumidity_2m', 'rain_sum', 'snow_sum',
+          'max_continuous_wind_speed',
           'shortwave_radiation_sum', 'station_code', 'granularity',
           'year_month_day' // 兼容旧映射，后续转为 record_time
         ]);
@@ -359,7 +432,20 @@ router.post("/addFiledata", async (req, res) => {
           });
         });
 
+        if (stationProvince && stationCity) {
+          const stationCode = await ensureStationCode(stationProvince, stationCity);
+          appendConstantField(fields, rows, 'station_code', stationCode);
+        }
+
+        if (!fields.includes('granularity')) {
+          const timeIdx = fields.indexOf('record_time');
+          const gran = detectGranularity(rows, timeIdx);
+          appendConstantField(fields, rows, 'granularity', gran);
+          console.log(`[addFiledata] CSV 自动补充 granularity=${gran}`);
+        }
+
         const inserted = await batchInsertWeatherData(fields, rows, res, req);
+        await syncWeatherDirectoryForPairs(collectStationPairs(fields, rows));
         return res.send({ code: 0, msg: `上传成功，处理 ${rows.length} 行数据` });
       }
 
@@ -367,8 +453,8 @@ router.post("/addFiledata", async (req, res) => {
       // ── Excel ────────────────────────────────────────────────
       // weather_data 实际存在的字段白名单（与 CSV 分支保持一致）
       const VALID_DB_FIELDS_XLS = new Set([
-        'record_time', 'avg_temperature', 'precipitation', 'rain_sum', 'snow_sum',
-        'max_continuous_wind_speed', 'windgusts_max', 'winddirection_dominant',
+        'record_time', 'avg_temperature', 'relativehumidity_2m', 'rain_sum', 'snow_sum',
+        'max_continuous_wind_speed',
         'shortwave_radiation_sum', 'station_code', 'granularity',
         'year_month_day'  // 兼容旧映射，下方转为 record_time
       ]);
@@ -415,33 +501,17 @@ router.post("/addFiledata", async (req, res) => {
 
       // 若有省市信息，注册站点
       if (stationProvince && stationCity) {
-        const { result: existing } = await pools({
-          sql: 'SELECT station_code FROM station_info WHERE province=? AND city=? AND granularity=2 LIMIT 1',
-          val: [stationProvince, stationCity], run: true
-        });
-        if (!existing || existing.length === 0) {
-          const { result: maxRow } = await pools({
-            sql: 'SELECT station_code FROM station_info ORDER BY station_code DESC LIMIT 1',
-            run: true
-          });
-          let nextNum = 1;
-          if (maxRow && maxRow.length > 0) {
-            const num = parseInt(maxRow[0].station_code.replace(/\D/g, ''), 10);
-            if (!isNaN(num)) nextNum = num + 1;
-          }
-          const newCode = 'ST' + String(nextNum).padStart(6, '0');
-          await pools({
-            sql: 'INSERT INTO station_info (station_code, province, city, granularity) VALUES (?,?,?,2)',
-            val: [newCode, stationProvince, stationCity], run: true
-          });
-          // 如果字段里有 station_code，用新编码替换占位
+        const stationCode = await ensureStationCode(stationProvince, stationCity);
+        if (xlsFields.includes('station_code')) {
           xlsFields.forEach((f, i) => {
             if (f === 'station_code') {
-              convertedData.forEach(row => { row[i] = newCode; });
+              convertedData.forEach(row => { row[i] = stationCode; });
             }
           });
-          console.log(`[addFiledata] Excel 新站点已注册: ${newCode} ${stationProvince} ${stationCity}`);
+        } else {
+          appendConstantField(xlsFields, convertedData, 'station_code', stationCode);
         }
+        console.log(`[addFiledata] Excel 站点编码: ${stationCode} ${stationProvince} ${stationCity}`);
       }
 
       // ── 自动补 granularity（根据时间间隔检测：15分钟=1，小时=2，天=3）
@@ -454,6 +524,7 @@ router.post("/addFiledata", async (req, res) => {
       }
 
       await batchInsertWeatherData(xlsFields, convertedData, res, req);
+      await syncWeatherDirectoryForPairs(collectStationPairs(xlsFields, convertedData));
       return res.send({ code: 0, msg: `上传成功，处理 ${convertedData.length} 行数据` });
 
     } else {

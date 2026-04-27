@@ -28,9 +28,8 @@ const FACTOR_ALIAS = {
 // weather_data 实际存在的字段白名单
 const ALLOWED_FACTORS = new Set([
   'station_code', 'granularity', 'record_time',
-  'avg_temperature', 'precipitation', 'rain_sum', 'snow_sum',
-  'max_continuous_wind_speed', 'windgusts_max',
-  'winddirection_dominant', 'shortwave_radiation_sum',
+  'avg_temperature', 'relativehumidity_2m', 'rain_sum', 'snow_sum',
+  'max_continuous_wind_speed', 'shortwave_radiation_sum',
 ]);
 
 router.post('/run', async (req, res) => {

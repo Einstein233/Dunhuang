@@ -17,12 +17,10 @@ async function main() {
     "max_temperature",
     "min_temperature",
     "avg_temperature",
-    "precipitation",
+    "relativehumidity_2m",
     "rain_sum",
     "snow_sum",
     "max_continuous_wind_speed",
-    "windgusts_max",
-    "winddirection_dominant",
     "shortwave_radiation_sum",
   ];
 

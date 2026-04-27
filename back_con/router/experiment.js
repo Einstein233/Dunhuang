@@ -1,196 +1,292 @@
-// router/experiment.js
 const express = require("express");
-const router = express.Router();
+const http = require("http");
+const https = require("https");
+
 const pools = require("../utils/pools");
-const { spawn } = require('child_process');
-const iconv = require('iconv-lite');
- 
-// 旧省份名 → weather_directory 城市名映射
-const REGION_TO_CITY = {
-  anhui:'安徽', aomen:'澳门', beijing:'北京', chongqing:'重庆',
-  dunhuang:'敦煌', fujian:'福建', gansu:'甘肃', guangdong:'广东',
-  guangxi:'广西', guizhou:'贵州', hainan:'海南', hebei:'河北',
-  heilongjiang:'黑龙江', henan:'河南', hubei:'湖北', hunan:'湖南',
-  jiangsu:'江苏', jiangxi:'江西', jilin:'吉林', liaoning:'辽宁',
-  neimenggu:'内蒙古', ningxia:'宁夏', qinghai:'青海', shan1xi:'山西',
-  shan3xi:'陕西', shandong:'山东', sichuan:'四川', taiwan:'台湾',
-  tianjin:'天津', xianggang:'香港', xinjiang:'新疆', xizang:'西藏',
-  yunnan:'云南', zhejiang:'浙江',
+
+const router = express.Router();
+
+const HOURLY_GRANULARITY = 2;
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const EQUIVALENCE_SERVICE_URL =
+  process.env.EQUIVALENCE_SERVICE_URL || "http://127.0.0.1:8000/api/v1/equivalence/run";
+
+const EXPERIMENT_TYPE_MAP = new Map([
+  ["降雨-日照耦合实验", "rain_solar"],
+  ["rain_solar", "rain_solar"],
+  ["rain-solar", "rain_solar"],
+  ["降雪-冻融耦合实验", "snow_freeze_thaw"],
+  ["snow_freeze_thaw", "snow_freeze_thaw"],
+  ["snow-freeze-thaw", "snow_freeze_thaw"],
+]);
+
+const EXPERIMENT_TYPE_LABEL = {
+  rain_solar: "降雨-日照耦合实验",
+  snow_freeze_thaw: "降雪-冻融耦合实验",
 };
- 
-// 旧字段名 → 新字段名映射（兼容前端传旧名）
-const FACTOR_ALIAS = {
-  year_month_day:  'record_time',
-  max_temperature: 'avg_temperature',
-  min_temperature: 'avg_temperature',
-};
- 
-// 新表中实际存在的字段
-const ALLOWED_FACTORS = [
-  'station_code', 'granularity', 'record_time',
-  'avg_temperature', 'precipitation', 'rain_sum', 'snow_sum',
-  'max_continuous_wind_speed', 'windgusts_max',
-  'winddirection_dominant', 'shortwave_radiation_sum',
-];
- 
-router.post("/run", async (req, res) => {
- 
-  console.log('\n========== /experiment/run 接收到请求 ==========');
-  console.log('请求参数:', JSON.stringify(req.body, null, 2));
- 
-  const { regions, dataRange, simulateYear, simulateMonth,
-          expMonth, expDay, envFactors } = req.body;
- 
-  console.log(`[日志1] 地区: ${regions?.join(', ')} | 时间: ${dataRange?.join(' 到 ')} | 字段: ${envFactors?.join(', ')}`);
- 
-  // ── 参数校验 ──────────────────────────────────────────────
-  if (!regions || !Array.isArray(regions) || !dataRange || !envFactors) {
-    console.log('[日志2] ❌ 参数不完整');
-    return res.status(400).json({ code: -1, msg: '参数不完整' });
+
+function normalizeString(value) {
+  if (value === null || value === undefined) return "";
+  return String(value).trim();
+}
+
+function normalizeDate(value) {
+  const text = normalizeString(value);
+  return DATE_RE.test(text) ? text : "";
+}
+
+function normalizeTargetDays(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric <= 0) {
+    return null;
   }
- 
-  const invalidRegions = regions.filter(r => !REGION_TO_CITY[r]);
-  if (invalidRegions.length > 0) {
-    console.log(`[日志2] ❌ 无效地区: ${invalidRegions.join(', ')}`);
-    return res.status(400).json({ code: -1, msg: `地区无效: ${invalidRegions.join(', ')}` });
-  }
- 
-  // 字段映射 + 去重
-  const mappedFactors = Array.from(new Set(
-    envFactors.map(f => FACTOR_ALIAS[f] || f)
-  ));
- 
-  const invalidFactors = mappedFactors.filter(f => !ALLOWED_FACTORS.includes(f));
-  if (invalidFactors.length > 0) {
-    console.log(`[日志2] ❌ 无效字段: ${invalidFactors.join(', ')}`);
-    return res.status(400).json({ code: -1, msg: `字段无效: ${invalidFactors.join(', ')}` });
-  }
- 
-  // 始终包含 record_time
-  const finalFactors = Array.from(new Set([...mappedFactors, 'record_time']));
-  const selectFactors = finalFactors.map(f => '`' + f + '`').join(',');
- 
-  console.log(`[日志2] ✅ 参数校验通过 | 映射后字段: ${finalFactors.join(', ')}`);
- 
-  try {
-    // ── STEP 1: 查 weather_directory 拿 station_code ──────
-    const cityList = regions.map(r => REGION_TO_CITY[r]);
-    const placeholders = cityList.map(() => '?').join(',');
-    const dirSql = `
-      SELECT station_code, city, province
+  return numeric;
+}
+
+function normalizeExperimentType(value) {
+  const text = normalizeString(value);
+  if (!text) return "rain_solar";
+  return EXPERIMENT_TYPE_MAP.get(text) || "";
+}
+
+function toWeatherPayloadRow(row) {
+  return {
+    time: row.record_time,
+    temperature_2m: row.avg_temperature,
+    relativehumidity_2m: row.relativehumidity_2m,
+    rain: row.rain_sum,
+    snowfall: row.snow_sum,
+    shortwave_radiation: row.shortwave_radiation_sum,
+    windspeed_10m: row.max_continuous_wind_speed,
+  };
+}
+
+async function getRegionDirectory() {
+  const { result } = await pools({
+    sql: `
+      SELECT province, city, station_code, start_time, end_time, total_count
       FROM weather_directory
-      WHERE city IN (${placeholders}) AND granularity = 2
-    `;
- 
-    console.log(`[日志3] 查询目录 → 城市: ${cityList.join(', ')}`);
- 
-    const { result: dirResult } = await pools({ sql: dirSql, val: cityList });
- 
-    if (!dirResult || dirResult.length === 0) {
-      console.log(`[日志3] ❌ weather_directory 中未找到城市: ${cityList.join(', ')}`);
-      console.log('[日志3] 💡 提示: 请确认 weather_directory 表已导入，且城市名称与映射表一致');
-      return res.status(404).json({
-        code: -1,
-        msg: `找不到对应气象站点，城市: ${cityList.join(', ')}`,
-        hint: '请检查 weather_directory 表是否存在该城市数据'
-      });
-    }
- 
-    const stationCodes = dirResult.map(r => r.station_code);
-    console.log(`[日志3] ✅ 找到站点: ${dirResult.map(r => `${r.city}(${r.station_code})`).join(', ')}`);
- 
-    // ── STEP 2: 查 weather_data ────────────────────────────
-    const stPlaceholders = stationCodes.map(() => '?').join(',');
-    const dataSql = `
-      SELECT ${selectFactors}
-      FROM \`weather_data\`
-      WHERE station_code IN (${stPlaceholders})
-        AND granularity = 2
+      WHERE granularity = ?
+      ORDER BY province ASC, city ASC
+    `,
+    val: [HOURLY_GRANULARITY],
+    run: true,
+  });
+  return result;
+}
+
+async function getRegionRecord({ city, stationCode }) {
+  let sql = `
+    SELECT province, city, station_code, start_time, end_time, total_count
+    FROM weather_directory
+    WHERE granularity = ?
+  `;
+  const val = [HOURLY_GRANULARITY];
+
+  if (stationCode) {
+    sql += " AND station_code = ?";
+    val.push(stationCode);
+  } else {
+    sql += " AND city = ?";
+    val.push(city);
+  }
+
+  sql += " ORDER BY end_time DESC LIMIT 1";
+
+  const { result } = await pools({ sql, val, run: true });
+  return result[0] || null;
+}
+
+async function getWeatherRows({ stationCode, startDate, endDate }) {
+  const { result } = await pools({
+    sql: `
+      SELECT station_code, record_time, avg_temperature, relativehumidity_2m,
+             rain_sum, snow_sum, max_continuous_wind_speed, shortwave_radiation_sum
+      FROM weather_data
+      WHERE station_code = ?
+        AND granularity = ?
         AND record_time >= ?
         AND record_time <= ?
-      ORDER BY station_code ASC, record_time ASC
-    `;
-    const sqlParams = [
-      ...stationCodes,
-      dataRange[0] + ' 00:00:00',
-      dataRange[1] + ' 23:59:59'
-    ];
- 
-    console.log(`[日志4] SQL: ${dataSql.replace(/\s+/g, ' ').trim()}`);
-    console.log(`[日志5] 参数: ${JSON.stringify(sqlParams)}`);
- 
-    const { result } = await pools({ sql: dataSql, val: sqlParams });
- 
-    if (!result || result.length === 0) {
-      console.log(`[日志6] ❌ 未查到数据 | 站点: ${stationCodes.join(',')} | 时间: ${dataRange[0]} ~ ${dataRange[1]}`);
-      console.log('[日志6] 💡 提示: 请检查该时间范围内是否有数据');
-      return res.status(404).json({
-        code: -1,
-        msg: '该时间范围内无数据',
-        stations: stationCodes,
-        range: dataRange
-      });
-    }
- 
-    console.log(`[日志6] ✅ 查到 ${result.length} 条记录`);
-    console.log('[日志7] 前3条示例:', JSON.stringify(result.slice(0, 3), null, 2));
- 
-    // ── STEP 3: 调用 Python 脚本 ───────────────────────────
-    console.log('[日志8] 调用 Python (ageingExp.py)...');
- 
-    const pyEnv = { ...process.env, PYTHONIOENCODING: 'utf-8' };
-    const py = spawn('python', ['ageingExp.py'], { env: pyEnv });
- 
-    py.stdin.write(JSON.stringify(result));
-    py.stdin.end();
- 
-    let pyOutput = '';
-    let pyStderr = '';
- 
-    py.stdout.on('data', data => {
-      const decoded = iconv.decode(data, 'utf8');
-      pyOutput += decoded;
-      console.log('[日志9] Python输出:', decoded.substring(0, 200));
-    });
- 
-    py.stderr.on('data', data => {
-      const decoded = iconv.decode(data, 'utf8');
-      pyStderr += decoded;
-      console.error('[日志10] Python错误:', decoded);
-    });
- 
-    py.on('close', code => {
-      console.log(`[日志11] Python退出码: ${code} | 输出长度: ${pyOutput.length} 字符`);
- 
-      if (code !== 0) {
-        console.error(`[日志19] ❌ Python执行失败\n错误信息: ${pyStderr}`);
-        return res.status(500).json({ code: -1, msg: 'Python运行失败', error: pyStderr });
+      ORDER BY record_time ASC
+    `,
+    val: [
+      stationCode,
+      HOURLY_GRANULARITY,
+      `${startDate} 00:00:00`,
+      `${endDate} 23:59:59`,
+    ],
+    run: true,
+  });
+  return result;
+}
+
+function postJson(urlText, payload) {
+  return new Promise((resolve, reject) => {
+    const url = new URL(urlText);
+    const transport = url.protocol === "https:" ? https : http;
+    const body = JSON.stringify(payload);
+
+    const req = transport.request(
+      {
+        protocol: url.protocol,
+        hostname: url.hostname,
+        port: url.port,
+        path: `${url.pathname}${url.search}`,
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(body),
+        },
+      },
+      (res) => {
+        let data = "";
+        res.setEncoding("utf8");
+        res.on("data", (chunk) => {
+          data += chunk;
+        });
+        res.on("end", () => {
+          try {
+            const parsed = JSON.parse(data || "{}");
+            if (res.statusCode >= 400) {
+              reject(new Error(parsed.detail || parsed.msg || `service status ${res.statusCode}`));
+              return;
+            }
+            resolve(parsed);
+          } catch (error) {
+            reject(new Error(`等效方案服务返回了无法解析的响应: ${data}`));
+          }
+        });
       }
- 
-      try {
-        const resultObj = JSON.parse(pyOutput);
- 
-        // Python 返回了 error 字段
-        if (resultObj.error) {
-          console.error(`[日志16] ❌ Python返回错误: ${resultObj.error}`);
-          return res.status(500).json({ code: -1, msg: resultObj.error });
-        }
- 
-        console.log('[日志14] ✅ JSON解析成功，返回前端');
-        res.json({ code: 0, data: resultObj });
- 
-      } catch (e) {
-        console.error('[日志16] ❌ JSON解析失败:', e.message);
-        console.error('[日志17] Python原始输出:', pyOutput);
-        res.status(500).json({ code: -1, msg: 'Python输出不是合法JSON', raw: pyOutput });
-      }
+    );
+
+    req.on("error", (error) => reject(error));
+    req.write(body);
+    req.end();
+  });
+}
+
+router.get("/regions", async (req, res) => {
+  try {
+    const regions = await getRegionDirectory();
+    res.json({ code: 0, data: regions });
+  } catch (error) {
+    res.status(500).json({
+      code: -1,
+      msg: "获取可用地区失败",
+      error: error.message,
     });
- 
-  } catch (err) {
-    console.error('[日志21] ❌ 数据库查询出错:', err.message);
-    console.error('[日志22] 错误堆栈:', err.stack);
-    res.status(500).json({ code: -1, msg: '数据库查询出错', error: err.message });
   }
 });
- 
+
+router.post("/run", async (req, res) => {
+  const stationCode = normalizeString(req.body.stationCode || req.body.station_code);
+  const city = normalizeString(req.body.city || req.body.region || req.body.regionName);
+  const startDate = normalizeDate(req.body.startDate || req.body.start || req.body.dataRange?.[0]);
+  const endDate = normalizeDate(req.body.endDate || req.body.end || req.body.dataRange?.[1]);
+  const experimentType = normalizeExperimentType(
+    req.body.experimentType || req.body.experiment_type
+  );
+  const targetDays = normalizeTargetDays(
+    req.body.targetDays ?? req.body.target_days ?? req.body.targetDuration
+  );
+
+  if (!stationCode && !city) {
+    return res.status(400).json({
+      code: -1,
+      msg: "缺少地区参数，请提供 city 或 stationCode",
+    });
+  }
+
+  if (!startDate || !endDate) {
+    return res.status(400).json({
+      code: -1,
+      msg: "时间窗口格式不正确，需要 YYYY-MM-DD",
+    });
+  }
+
+  if (!experimentType) {
+    return res.status(400).json({
+      code: -1,
+      msg: "实验类型无效，可选：降雨-日照耦合实验 / 降雪-冻融耦合实验",
+    });
+  }
+
+  if (targetDays === null) {
+    return res.status(400).json({
+      code: -1,
+      msg: "目标实验室时长必须大于 0",
+    });
+  }
+
+  try {
+    const region = await getRegionRecord({ city, stationCode });
+    if (!region) {
+      return res.status(404).json({
+        code: -1,
+        msg: "未找到对应地区的小时级气候目录记录",
+      });
+    }
+
+    const weatherRows = await getWeatherRows({
+      stationCode: region.station_code,
+      startDate,
+      endDate,
+    });
+
+    if (!weatherRows.length) {
+      return res.status(404).json({
+        code: -1,
+        msg: "当前地区在所选时间窗口内没有可用于计算的气候数据",
+        data: {
+          province: region.province,
+          city: region.city,
+          stationCode: region.station_code,
+          startDate,
+          endDate,
+        },
+      });
+    }
+
+    const engineResult = await postJson(EQUIVALENCE_SERVICE_URL, {
+      experimentType,
+      targetDays,
+      returnHardwareSteps: true,
+      weatherData: weatherRows.map(toWeatherPayloadRow),
+    });
+
+    res.json({
+      code: 0,
+      data: {
+        query: {
+          province: region.province,
+          city: region.city,
+          stationCode: region.station_code,
+          startDate,
+          endDate,
+          rowCount: weatherRows.length,
+          dataCoverageStart: region.start_time,
+          dataCoverageEnd: region.end_time,
+        },
+        request: {
+          experimentType: engineResult.experiment_type_label || EXPERIMENT_TYPE_LABEL[experimentType] || experimentType,
+          targetDays,
+        },
+        plan: engineResult.result?.plan || null,
+        hardwareSteps: engineResult.result?.hardware_steps || [],
+      },
+    });
+  } catch (error) {
+    console.error("[experiment/run] error:", error);
+    const message = /ECONNREFUSED|fetch failed|connect/i.test(error.message)
+      ? "等效方案服务不可用，请先启动 Docker 容器"
+      : "等效方案计算失败";
+
+    res.status(500).json({
+      code: -1,
+      msg: message,
+      error: error.message,
+    });
+  }
+});
+
 module.exports = router;

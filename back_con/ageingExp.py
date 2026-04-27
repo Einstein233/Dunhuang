@@ -21,9 +21,8 @@ def main():
     df['time'] = pd.to_datetime(df.get('year_month_day', df.get('time')))
     for col in [
         'max_temperature', 'min_temperature', 'avg_temperature',
-        'precipitation', 'rain_sum', 'snow_sum',
-        'max_continuous_wind_speed', 'windgusts_max',
-        'winddirection_dominant', 'shortwave_radiation_sum'
+        'relativehumidity_2m', 'rain_sum', 'snow_sum',
+        'max_continuous_wind_speed', 'shortwave_radiation_sum'
     ]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce')

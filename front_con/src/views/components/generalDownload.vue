@@ -91,8 +91,8 @@ export default {
 
       fields: [
         "record_time", "station_code", "avg_temperature",
-        "precipitation", "rain_sum", "snow_sum", "max_continuous_wind_speed", "windgusts_max",
-        "winddirection_dominant", "shortwave_radiation_sum"
+        "relativehumidity_2m", "rain_sum", "snow_sum",
+        "max_continuous_wind_speed", "shortwave_radiation_sum"
       ],
 
       // 字段中文名
@@ -100,12 +100,10 @@ export default {
         record_time: "采集时间",
         station_code: "气象编码",
         avg_temperature: "平均气温 (°C)",
-        precipitation: "降水量 (mm)",
+        relativehumidity_2m: "相对湿度 (%)",
         rain_sum: "降雨量 (mm)",
         snow_sum: "降雪量 (mm)",
         max_continuous_wind_speed: "风速 (m/s)",
-        windgusts_max: "阵风风速 (m/s)",
-        winddirection_dominant: "主导风向 (°)",
         shortwave_radiation_sum: "短波辐射 (W/m²)"
       },
 

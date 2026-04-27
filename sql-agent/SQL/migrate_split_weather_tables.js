@@ -1,7 +1,5 @@
 require("dotenv").config();
 const mysql = require("mysql2/promise");
-const crypto = require("crypto");
-
 function safeTableName(name) {
   return String(name).replace(/`/g, "``");
 }
@@ -23,14 +21,10 @@ function normalizeDateToHour(v) {
   return `${datePart} 00:00:00`;
 }
 
-function shortHash(input) {
-  return crypto.createHash("md5").update(input).digest("hex").slice(0, 6);
-}
-
 async function main() {
   const url = new URL(process.env.DATABASE_URL);
   const conn = await mysql.createConnection({
-    host: url.hostname,
+    host: url.hostname === "localhost" ? "127.0.0.1" : url.hostname,
     port: Number(url.port),
     user: decodeURIComponent(url.username),
     password: decodeURIComponent(url.password),
@@ -40,7 +34,6 @@ async function main() {
   const summary = {
     source_tables: [],
     stations_created: 0,
-    station_conflicts_resolved: 0,
     rows_scanned: 0,
     rows_inserted_or_updated: 0,
     rows_skipped_invalid: 0,
@@ -81,57 +74,46 @@ async function main() {
 
   summary.source_tables = candidateTables;
 
-  // Cache station mapping: `${region}|${stationCode}` -> station_id
+  // One region corresponds to exactly one station in the current schema.
   const stationMap = new Map();
 
-  async function getStationIdByCode(stationCode) {
+  async function getStationByRegion(regionName) {
     const [rows] = await conn.query(
-      "SELECT id, region_name FROM sys_station WHERE station_code = ? LIMIT 1",
-      [stationCode]
+      "SELECT id, station_code, region_name FROM station WHERE region_name = ? LIMIT 1",
+      [regionName]
     );
     return rows[0] || null;
   }
 
-  async function ensureStation(regionName, rawStationCode) {
-    const trimmed = String(rawStationCode || "").trim();
-    const mapKey = `${regionName}|${trimmed}`;
-    if (stationMap.has(mapKey)) return stationMap.get(mapKey);
+  async function ensureStation(regionName) {
+    if (stationMap.has(regionName)) return stationMap.get(regionName);
 
-    let stationCode = trimmed.slice(0, 50);
-    if (!stationCode) return null;
-
-    const existing = await getStationIdByCode(stationCode);
-    if (existing && existing.region_name === regionName) {
-      stationMap.set(mapKey, existing.id);
+    const existing = await getStationByRegion(regionName);
+    if (existing) {
+      stationMap.set(regionName, existing.id);
       return existing.id;
     }
 
-    if (existing && existing.region_name !== regionName) {
-      // Resolve code collision by suffixing a short hash.
-      const base = stationCode.slice(0, 40);
-      stationCode = `${base}_${shortHash(`${regionName}|${trimmed}`)}`.slice(0, 50);
-      summary.station_conflicts_resolved += 1;
-    }
+    const stationCode = `STN_${String(regionName).toUpperCase()}`.slice(0, 50);
 
     const [insertRes] = await conn.query(
       `
-      INSERT INTO sys_station (station_code, region_name)
+      INSERT INTO station (station_code, region_name)
       VALUES (?, ?)
-      ON DUPLICATE KEY UPDATE region_name = VALUES(region_name)
     `,
       [stationCode, regionName]
     );
 
     let stationId = insertRes.insertId;
     if (!stationId) {
-      const row = await getStationIdByCode(stationCode);
+      const row = await getStationByRegion(regionName);
       stationId = row ? row.id : null;
     } else {
       summary.stations_created += 1;
     }
 
     if (stationId) {
-      stationMap.set(mapKey, stationId);
+      stationMap.set(regionName, stationId);
     }
     return stationId;
   }
@@ -175,12 +157,12 @@ async function main() {
       summary.rows_scanned += 1;
       const stationCode = String(row.station_code || "").trim();
       const recordTime = normalizeDateToHour(row.year_month_day);
-      if (!stationCode || !recordTime) {
+      if (!recordTime) {
         summary.rows_skipped_invalid += 1;
         continue;
       }
 
-      const stationId = await ensureStation(regionName, stationCode);
+      const stationId = await ensureStation(regionName);
       if (!stationId) {
         summary.rows_skipped_invalid += 1;
         continue;
@@ -213,13 +195,13 @@ async function main() {
     }
   }
 
-  const [stationCountRows] = await conn.query("SELECT COUNT(*) AS cnt FROM sys_station");
+  const [stationCountRows] = await conn.query("SELECT COUNT(*) AS cnt FROM station");
   const [factCountRows] = await conn.query("SELECT COUNT(*) AS cnt FROM weather_observation");
 
   const [regionTopRows] = await conn.query(`
     SELECT s.region_name, COUNT(*) AS cnt
     FROM weather_observation w
-    JOIN sys_station s ON w.station_id = s.id
+    JOIN station s ON w.station_id = s.id
     GROUP BY s.region_name
     ORDER BY cnt DESC
     LIMIT 10
@@ -245,4 +227,3 @@ main().catch((err) => {
   console.error(err);
   process.exit(1);
 });
-

@@ -374,6 +374,10 @@ export default {
           label: '平均气温',
         },
         {
+          value: 'relativehumidity_2m',
+          label: '相对湿度',
+        },
+        {
           value: 'avg_temperature_attribute',
           label: '平均气温属性',
         },
@@ -426,14 +430,6 @@ export default {
           label: '最大持续风速属性',
         },
         {
-          value: 'windgusts_max',
-          label: '最大阵风',
-        },
-        {
-          value: 'winddirection_dominant',
-          label: '主导风向',
-        },
-        {
           value: 'max_temperature',
           label: '最高气温',
         },
@@ -448,14 +444,6 @@ export default {
         {
           value: 'min_temperature_attribute',
           label: '最低气温属性',
-        },
-        {
-          value: 'precipitation',
-          label: '降水量',
-        },
-        {
-          value: 'precipitation_attribute',
-          label: '降水量属性',
         },
         {
           value: 'rain_sum',
@@ -730,6 +718,9 @@ export default {
           { label: "°C", value: "C" },
           { label: "°F", value: "F" }
         ],
+        relativehumidity_2m: [
+          { label: "%", value: "%" }
+        ],
         avg_temperature_attribute: [{ label: "无单位", value: "none" }],
 
         avg_dew_point: [
@@ -769,15 +760,6 @@ export default {
         ],
         max_continuous_wind_speed_attribute: [{ label: "无单位", value: "none" }],
 
-        windgusts_max: [
-          { label: "m/s", value: "m/s" },
-          { label: "km/h", value: "km/h" }
-        ],
-
-        winddirection_dominant: [
-          { label: "°", value: "°" }
-        ],
-
         max_temperature: [
           { label: "°C", value: "C" },
           { label: "°F", value: "F" }
@@ -791,13 +773,6 @@ export default {
         ],
 
         min_temperature_attribute: [{ label: "无单位", value: "none" }],
-
-        precipitation: [
-          { label: "mm", value: "mm" },  
-          { label: "cm", value: "cm" } 
-        ],
-        
-        precipitation_attribute: [{ label: "无单位", value: "none" }],
 
         rain_sum: [
           { label: "mm", value: "mm" },  
@@ -841,29 +816,19 @@ export default {
           else                                                     matchedType = ['date', 'year_month_day'];
         }
 
-        // 降水量（precip 优先，避免被 rain 匹配）
-        else if (/precip/.test(h) || /降水量|降水/.test(zh)) {
-          matchedType = ['precipitation'];
+        // 相对湿度
+        else if (/humidity/.test(h) || /湿度/.test(zh)) {
+          matchedType = ['relativehumidity_2m'];
         }
 
-        // 降雨量
-        else if (/rain/.test(h) || /降雨/.test(zh)) {
+        // 降水 / 降雨量
+        else if (/precip|rain/.test(h) || /降水|降雨/.test(zh)) {
           matchedType = ['rain_sum'];
         }
 
         // 降雪量
         else if (/snow/.test(h) || /降雪|积雪/.test(zh)) {
           matchedType = ['snow_sum'];
-        }
-
-        // 阵风（gust 优先于 wind，避免被风速拦截）
-        else if (/gust/.test(h) || /阵风/.test(zh)) {
-          matchedType = ['windgusts_max'];
-        }
-
-        // 风向（direction 优先于 windspeed）
-        else if (/direction/.test(h) || /风向/.test(zh)) {
-          matchedType = ['winddirection_dominant'];
         }
 
         // 风速（windspeed / windspeed_10m / wind_speed 等）

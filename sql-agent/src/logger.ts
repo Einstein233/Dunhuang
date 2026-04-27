@@ -1,187 +1,156 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { clearTraceLogs } from './trace-logger';
+import { ensureParentDirectory, safeJSONStringify } from './safe-json';
 
-// 日志文件路径 - 使用 __dirname 确保路径正确
-const LOG_FILE = path.resolve(__dirname, '../server.log');
-const MESSAGE_LOG_FILE = path.resolve(__dirname, '../message.log');
+const LOG_ROOT_DIR = path.resolve(__dirname, '../logs');
+const LOG_FILE = path.join(LOG_ROOT_DIR, 'server.log');
+const MESSAGE_LOG_FILE = path.join(LOG_ROOT_DIR, 'message.log');
 
-/**
- * 日志级别
- */
 export enum LogLevel {
   INFO = 'INFO',
   DEBUG = 'DEBUG',
   CONTEXT = 'CONTEXT',
   TOOL = 'TOOL',
-  ERROR = 'ERROR'
+  ERROR = 'ERROR',
 }
 
-/**
- * 日志条目
- */
 export interface LogEntry {
   timestamp: string;
   level: LogLevel;
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
-/**
- * 日志记录器
- */
 class Logger {
   private logBuffer: LogEntry[] = [];
-  private readonly maxBufferSize: number = 100; // 内存中最多保留 100 条
-  private initialized: boolean = false;
+  private readonly maxBufferSize = 100;
+  private initialized = false;
 
-  /**
-   * 初始化日志文件
-   */
-  private init(): void {
-    if (!this.initialized) {
-      console.log(`[Logger] 日志文件路径：${LOG_FILE}`);
-      // 确保文件存在
-      try {
-        if (!fs.existsSync(LOG_FILE)) {
-          fs.writeFileSync(LOG_FILE, '', 'utf-8');
-        }
-        this.initialized = true;
-      } catch (error) {
-        console.error('初始化日志文件失败:', error);
-      }
+  init(): void {
+    if (this.initialized) {
+      return;
     }
+
+    ensureParentDirectory(LOG_FILE);
+    ensureParentDirectory(MESSAGE_LOG_FILE);
+
+    if (!fs.existsSync(LOG_FILE)) {
+      fs.writeFileSync(LOG_FILE, '', 'utf8');
+    }
+
+    if (!fs.existsSync(MESSAGE_LOG_FILE)) {
+      fs.writeFileSync(MESSAGE_LOG_FILE, '', 'utf8');
+    }
+
+    this.initialized = true;
   }
 
-  /**
-   * 初始化 message.log 文件
-   */
-  private initMessageLog(): void {
-    try {
-      if (!fs.existsSync(MESSAGE_LOG_FILE)) {
-        fs.writeFileSync(MESSAGE_LOG_FILE, '', 'utf-8');
-      }
-    } catch (error) {
-      console.error('初始化 message.log 失败:', error);
-    }
-  }
-
-  /**
-   * 写入日志
-   */
-  log(level: LogLevel, message: string, data?: any): void {
+  log(level: LogLevel, message: string, data?: unknown): void {
     this.init();
 
     const entry: LogEntry = {
       timestamp: new Date().toLocaleString('zh-CN'),
       level,
       message,
-      data
+      data,
     };
 
     this.logBuffer.push(entry);
-
-    // 保持缓冲区大小
     if (this.logBuffer.length > this.maxBufferSize) {
       this.logBuffer.shift();
     }
 
-    // 同步写入文件
     this.writeToFile(entry);
   }
 
-  /**
-   * 写入文件
-   */
   private writeToFile(entry: LogEntry): void {
-    const logLine = this.formatLogLine(entry);
-
     try {
-      fs.appendFileSync(LOG_FILE, logLine + '\n', 'utf-8');
+      fs.appendFileSync(LOG_FILE, `${this.formatLogLine(entry)}\n`, 'utf8');
     } catch (error) {
-      console.error('写入日志失败:', error, '文件路径:', LOG_FILE);
+      console.error('写入 server.log 失败:', error);
     }
   }
 
-  /**
-   * 格式化日志行
-   */
   private formatLogLine(entry: LogEntry): string {
     const header = `[${entry.timestamp}] [${entry.level}] ${entry.message}`;
-
-    if (entry.data) {
-      const dataStr = typeof entry.data === 'string'
-        ? entry.data
-        : JSON.stringify(entry.data, null, 2);
-      return `${header}\n${dataStr}`;
+    if (typeof entry.data === 'undefined') {
+      return header;
     }
 
-    return header;
+    const dataText =
+      typeof entry.data === 'string' ? entry.data : safeJSONStringify(entry.data, 2);
+    return `${header}\n${dataText}`;
   }
 
-  /**
-   * 清空日志文件（同时清空 server.log 和 message.log）
-   */
   clear(): void {
+    this.init();
     this.logBuffer = [];
+
     try {
-      fs.writeFileSync(LOG_FILE, '', 'utf-8');
-      fs.writeFileSync(MESSAGE_LOG_FILE, '', 'utf-8');
-      console.log('日志文件已清空（server.log + message.log）');
+      fs.writeFileSync(LOG_FILE, '', 'utf8');
+      fs.writeFileSync(MESSAGE_LOG_FILE, '', 'utf8');
+      clearTraceLogs();
+      this.initialized = false;
+      this.init();
     } catch (error) {
       console.error('清空日志失败:', error);
+      throw error;
     }
   }
 
-  /**
-   * 保存当前上下文消息到 message.log（覆盖模式，只显示最新上下文）
-   */
   saveContext(messages: { role: string; content: string | null; contentLength?: number }[]): void {
-    console.log(`[saveContext] 被调用，消息数：${messages.length}`);
-    this.initMessageLog();
+    this.init();
 
     const timestamp = new Date().toLocaleString('zh-CN');
-    let content = `=== 当前上下文快照 (更新时间：${timestamp}) ===\n\n`;
+    let content = `=== 当前上下文快照（更新时间：${timestamp}） ===\n\n`;
     content += `总消息数：${messages.length}\n`;
-    content += `${'─'.repeat(60)}\n\n`;
+    content += `${'='.repeat(60)}\n\n`;
 
-    messages.forEach((msg, index) => {
-      const role = msg.role?.toUpperCase() || 'UNKNOWN';
-      const contentLength = msg.content?.length || 0;
-      const preview = msg.content
-        ? String(msg.content).substring(0, 500) + (contentLength > 500 ? '\n...(截断)' : '')
+    messages.forEach((message, index) => {
+      const role = message.role?.toUpperCase() || 'UNKNOWN';
+      const contentLength = message.content?.length || 0;
+      const preview = message.content
+        ? String(message.content).substring(0, 4000) +
+          (contentLength > 4000 ? '\n...(截断)' : '')
         : '[空内容]';
 
       content += `[${index}] ${role} (长度：${contentLength} 字符)\n`;
-      content += `${'─'.repeat(40)}\n`;
+      content += `${'-'.repeat(40)}\n`;
       content += `${preview}\n\n`;
     });
 
     try {
-      // 覆盖写入，只显示最新上下文
-      fs.writeFileSync(MESSAGE_LOG_FILE, content, 'utf-8');
+      fs.writeFileSync(MESSAGE_LOG_FILE, content, 'utf8');
     } catch (error) {
       console.error('写入 message.log 失败:', error);
     }
   }
 
-  /**
-   * 获取最近的日志
-   */
   getRecent(count: number = 50): LogEntry[] {
     return this.logBuffer.slice(-count);
   }
+
+  getPaths(): { serverLogFile: string; messageLogFile: string } {
+    return {
+      serverLogFile: LOG_FILE,
+      messageLogFile: MESSAGE_LOG_FILE,
+    };
+  }
 }
 
-// 全局单例
 const globalLogger = new Logger();
 
 export const logger = {
-  info: (message: string, data?: any) => globalLogger.log(LogLevel.INFO, message, data),
-  debug: (message: string, data?: any) => globalLogger.log(LogLevel.DEBUG, message, data),
-  context: (message: string, data?: any) => globalLogger.log(LogLevel.CONTEXT, message, data),
-  tool: (message: string, data?: any) => globalLogger.log(LogLevel.TOOL, message, data),
-  error: (message: string, data?: any) => globalLogger.log(LogLevel.ERROR, message, data),
+  init: () => globalLogger.init(),
+  info: (message: string, data?: unknown) => globalLogger.log(LogLevel.INFO, message, data),
+  debug: (message: string, data?: unknown) => globalLogger.log(LogLevel.DEBUG, message, data),
+  context: (message: string, data?: unknown) => globalLogger.log(LogLevel.CONTEXT, message, data),
+  tool: (message: string, data?: unknown) => globalLogger.log(LogLevel.TOOL, message, data),
+  error: (message: string, data?: unknown) => globalLogger.log(LogLevel.ERROR, message, data),
   clear: () => globalLogger.clear(),
   getRecent: (count?: number) => globalLogger.getRecent(count),
-  saveContext: (messages: { role: string; content: string | null; contentLength?: number }[]) => globalLogger.saveContext(messages)
+  saveContext: (messages: { role: string; content: string | null; contentLength?: number }[]) =>
+    globalLogger.saveContext(messages),
+  getPaths: () => globalLogger.getPaths(),
 };
