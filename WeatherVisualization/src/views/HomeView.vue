@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import dayjs from "dayjs";
 import axios from "axios";
 import { RouterView } from "vue-router";
@@ -69,6 +69,7 @@ const showInfo = ref(false);
 const loading = ref(false);
 const regionLoading = ref(false);
 const popupRef = ref<HTMLElement | null>(null);
+const resultTableRef = ref<any>(null);
 
 const currentRegion = ref<RegionPopupData>({});
 const availableRegions = ref<RegionDirectoryItem[]>([]);
@@ -134,6 +135,43 @@ const popupTop = ref(55);
 let dragging = false;
 let offsetX = 0;
 let offsetY = 0;
+let popupResizeObserver: ResizeObserver | null = null;
+let tableLayoutFrameId: number | null = null;
+
+function scheduleResultTableLayout() {
+  if (tableLayoutFrameId !== null) {
+    window.cancelAnimationFrame(tableLayoutFrameId);
+  }
+
+  tableLayoutFrameId = window.requestAnimationFrame(async () => {
+    tableLayoutFrameId = null;
+    await nextTick();
+    resultTableRef.value?.doLayout?.();
+  });
+}
+
+function stopObservingPopupResize() {
+  if (popupResizeObserver) {
+    popupResizeObserver.disconnect();
+    popupResizeObserver = null;
+  }
+
+  if (tableLayoutFrameId !== null) {
+    window.cancelAnimationFrame(tableLayoutFrameId);
+    tableLayoutFrameId = null;
+  }
+}
+
+function observePopupResize() {
+  if (!popupRef.value || popupResizeObserver) {
+    return;
+  }
+
+  popupResizeObserver = new ResizeObserver(() => {
+    scheduleResultTableLayout();
+  });
+  popupResizeObserver.observe(popupRef.value);
+}
 
 function startDrag(event: MouseEvent) {
   if (!popupRef.value) return;
@@ -159,6 +197,8 @@ function stopDrag() {
 onBeforeUnmount(() => {
   document.removeEventListener("mousemove", onDrag);
   document.removeEventListener("mouseup", stopDrag);
+  window.removeEventListener("resize", scheduleResultTableLayout);
+  stopObservingPopupResize();
 });
 
 function getDefaultDateRange(region: RegionDirectoryItem): [string, string] {
@@ -214,6 +254,7 @@ async function showRegionPopup(regionData: RegionPopupData) {
 
 function closeRegionPopup() {
   showInfo.value = false;
+  stopObservingPopupResize();
 }
 
 function clearSelection() {
@@ -227,6 +268,67 @@ function clearSelection() {
     selectedStationCode.value = "";
     dataTimeRange.value = [];
   }
+}
+
+function normalizeFileSegment(value: string) {
+  return String(value || "")
+    .trim()
+    .replace(/[\\/:*?"<>|]+/g, "-")
+    .replace(/\s+/g, "_");
+}
+
+function csvEscape(value: unknown) {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  const text = String(value);
+  if (/[",\r\n]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+
+  return text;
+}
+
+function buildResultFileName() {
+  const result = simulationResult.value;
+  if (!result) {
+    return "equivalence_plan.csv";
+  }
+
+  const city = normalizeFileSegment(result.query.city || "region");
+  const startDate = normalizeFileSegment(result.query.startDate || "start");
+  const endDate = normalizeFileSegment(result.query.endDate || "end");
+  const experimentTypeLabel = normalizeFileSegment(result.request.experimentType || "plan");
+
+  return `${city}_${experimentTypeLabel}_${startDate}_${endDate}.csv`;
+}
+
+function downloadSimulationResult() {
+  const result = simulationResult.value;
+  if (!result || !result.hardwareSteps.length) {
+    ElMessage.warning("当前还没有可下载的等效方案表格");
+    return;
+  }
+
+  const columns = tableColumns.value;
+  const header = columns.map((column) => csvEscape(column)).join(",");
+  const rows = result.hardwareSteps.map((row) =>
+    columns.map((column) => csvEscape(row[column])).join(",")
+  );
+  const csvText = [`\ufeff${header}`, ...rows].join("\r\n");
+  const blob = new Blob([csvText], { type: "text/csv;charset=utf-8;" });
+  const objectUrl = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = objectUrl;
+  link.download = buildResultFileName();
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(objectUrl);
+
+  ElMessage.success("等效方案表格已开始下载");
 }
 
 async function handleStartSimulate() {
@@ -302,8 +404,35 @@ watch(selectedStationCode, () => {
   }
 });
 
+watch(
+  showInfo,
+  (visible) => {
+    if (!visible) {
+      stopObservingPopupResize();
+      return;
+    }
+
+    nextTick(() => {
+      observePopupResize();
+      scheduleResultTableLayout();
+    });
+  },
+  { flush: "post" }
+);
+
+watch(
+  () => simulationResult.value?.hardwareSteps.length || 0,
+  (rowCount) => {
+    if (showInfo.value && rowCount > 0) {
+      scheduleResultTableLayout();
+    }
+  },
+  { flush: "post" }
+);
+
 onMounted(() => {
   loadAvailableRegions();
+  window.addEventListener("resize", scheduleResultTableLayout);
 });
 </script>
 
@@ -455,7 +584,14 @@ onMounted(() => {
               </div>
 
               <div v-if="simulationResult.hardwareSteps.length" class="result-table">
+                <div class="result-toolbar">
+                  <el-button size="small" type="primary" plain @click="downloadSimulationResult">
+                    下载当前表格
+                  </el-button>
+                </div>
                 <el-table
+                  ref="resultTableRef"
+                  class="result-data-table"
                   :data="simulationResult.hardwareSteps"
                   border
                   stripe
@@ -652,6 +788,20 @@ onMounted(() => {
 .result-table {
   flex: 1;
   min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.result-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.result-data-table {
+  flex: 1;
+  min-height: 0;
 }
 
 .placeholder {

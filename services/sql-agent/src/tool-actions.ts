@@ -5,7 +5,7 @@ import {
   generateChartConfig,
   getDatabaseSchema,
   type ChartType,
-} from './tool-runtime';
+} from './guarded-tool-runtime';
 import type { AgentState } from './types';
 
 export type AgentNode = (state: AgentState) => Promise<AgentState>;

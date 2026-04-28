@@ -61,6 +61,128 @@ function toWeatherPayloadRow(row) {
   };
 }
 
+function toUtcDate(dateText) {
+  return new Date(`${dateText}T00:00:00Z`);
+}
+
+function formatUtcDate(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function addUtcDays(date, days) {
+  const next = new Date(date.getTime());
+  next.setUTCDate(next.getUTCDate() + days);
+  return next;
+}
+
+function roundTo(value, precision = 6) {
+  const factor = 10 ** precision;
+  return Math.round((Number(value) + Number.EPSILON) * factor) / factor;
+}
+
+function buildYearSegments(startDate, endDate) {
+  const segments = [];
+  const end = toUtcDate(endDate);
+  let cursor = toUtcDate(startDate);
+
+  while (cursor <= end) {
+    const year = cursor.getUTCFullYear();
+    const yearEnd = new Date(Date.UTC(year, 11, 31));
+    const segmentEnd = yearEnd < end ? yearEnd : end;
+
+    segments.push({
+      year,
+      requestedStartDate: formatUtcDate(cursor),
+      requestedEndDate: formatUtcDate(segmentEnd),
+    });
+
+    cursor = addUtcDays(segmentEnd, 1);
+  }
+
+  return segments;
+}
+
+function splitWeatherRowsByYear(weatherRows, requestedSegments) {
+  const buckets = requestedSegments.map((segment) => ({
+    ...segment,
+    rows: [],
+  }));
+  const segmentMap = new Map(buckets.map((segment) => [String(segment.year), segment]));
+
+  for (const row of weatherRows) {
+    const yearKey = normalizeString(row.record_time).slice(0, 4);
+    const targetSegment = segmentMap.get(yearKey);
+    if (targetSegment) {
+      targetSegment.rows.push(row);
+    }
+  }
+
+  return buckets.map((segment) => ({
+    ...segment,
+    rowCount: segment.rows.length,
+    actualStartDate: segment.rows[0]?.record_time?.slice(0, 10) || null,
+    actualEndDate: segment.rows[segment.rows.length - 1]?.record_time?.slice(0, 10) || null,
+  }));
+}
+
+function allocateTargetDaysByRowCount(segments, targetDays) {
+  const totalRowCount = segments.reduce((sum, segment) => sum + segment.rowCount, 0);
+  let allocated = 0;
+
+  return segments.map((segment, index) => {
+    let assignedTargetDays = targetDays;
+
+    if (segments.length > 1) {
+      if (index === segments.length - 1) {
+        assignedTargetDays = roundTo(targetDays - allocated);
+      } else {
+        assignedTargetDays = roundTo((targetDays * segment.rowCount) / totalRowCount);
+        allocated += assignedTargetDays;
+      }
+    }
+
+    return {
+      ...segment,
+      assignedTargetDays,
+    };
+  });
+}
+
+function detectStepNumberKey(row) {
+  if (!row || typeof row !== "object") {
+    return "";
+  }
+
+  const preferredKeys = ["步骤编号", "step", "step_number", "stepNumber"];
+  for (const key of preferredKeys) {
+    if (Object.prototype.hasOwnProperty.call(row, key)) {
+      return key;
+    }
+  }
+
+  return (
+    Object.keys(row).find((key) => {
+      return /step/i.test(key) || key.includes("编号");
+    }) || ""
+  );
+}
+
+function renumberHardwareSteps(hardwareSteps) {
+  let nextStep = 1;
+
+  return hardwareSteps.map((row) => {
+    const clonedRow = { ...row };
+    const stepKey = detectStepNumberKey(clonedRow);
+
+    if (stepKey) {
+      clonedRow[stepKey] = nextStep;
+    }
+
+    nextStep += 1;
+    return clonedRow;
+  });
+}
+
 async function getRegionDirectory() {
   const { result } = await pools({
     sql: `
@@ -165,6 +287,119 @@ function postJson(urlText, payload) {
   });
 }
 
+async function runEquivalenceEngine({ experimentType, targetDays, weatherRows, segmentLabel }) {
+  try {
+    return await postJson(EQUIVALENCE_SERVICE_URL, {
+      experimentType,
+      targetDays,
+      returnHardwareSteps: true,
+      weatherData: weatherRows.map(toWeatherPayloadRow),
+    });
+  } catch (error) {
+    throw new Error(`${segmentLabel} 等效计算失败: ${error.message}`);
+  }
+}
+
+async function runSingleYearEquivalence({ experimentType, targetDays, weatherRows }) {
+  return runEquivalenceEngine({
+    experimentType,
+    targetDays,
+    weatherRows,
+    segmentLabel: "当前时间窗口",
+  });
+}
+
+async function runMultiYearEquivalence({ experimentType, targetDays, weatherRows, startDate, endDate }) {
+  const requestedSegments = buildYearSegments(startDate, endDate);
+  const segmentedRows = splitWeatherRowsByYear(weatherRows, requestedSegments);
+  const validSegments = segmentedRows.filter((segment) => segment.rowCount > 0);
+  const skippedSegments = segmentedRows
+    .filter((segment) => segment.rowCount <= 0)
+    .map((segment) => ({
+      year: segment.year,
+      requestedStartDate: segment.requestedStartDate,
+      requestedEndDate: segment.requestedEndDate,
+      rowCount: 0,
+    }));
+
+  if (!validSegments.length) {
+    return {
+      requestedSegments,
+      segmentSummaries: [],
+      skippedSegments,
+      mergedPlan: null,
+      mergedHardwareSteps: [],
+    };
+  }
+
+  const allocatedSegments = allocateTargetDaysByRowCount(validSegments, targetDays);
+  const segmentResults = [];
+
+  for (const segment of allocatedSegments) {
+    const engineResult = await runEquivalenceEngine({
+      experimentType,
+      targetDays: segment.assignedTargetDays,
+      weatherRows: segment.rows,
+      segmentLabel: `${segment.year} 年片段`,
+    });
+
+    segmentResults.push({
+      year: segment.year,
+      requestedStartDate: segment.requestedStartDate,
+      requestedEndDate: segment.requestedEndDate,
+      actualStartDate: segment.actualStartDate,
+      actualEndDate: segment.actualEndDate,
+      rowCount: segment.rowCount,
+      targetDays: segment.assignedTargetDays,
+      experimentType:
+        engineResult.experiment_type_label || EXPERIMENT_TYPE_LABEL[experimentType] || experimentType,
+      plan: engineResult.result?.plan || null,
+      hardwareStepCount: engineResult.result?.hardware_steps?.length || 0,
+      hardwareSteps: engineResult.result?.hardware_steps || [],
+    });
+  }
+
+  const mergedHardwareSteps = renumberHardwareSteps(
+    segmentResults.flatMap((segment) => segment.hardwareSteps)
+  );
+
+  return {
+    requestedSegments,
+    segmentSummaries: segmentResults.map((segment) => ({
+      year: segment.year,
+      requestedStartDate: segment.requestedStartDate,
+      requestedEndDate: segment.requestedEndDate,
+      actualStartDate: segment.actualStartDate,
+      actualEndDate: segment.actualEndDate,
+      rowCount: segment.rowCount,
+      targetDays: segment.targetDays,
+      experimentType: segment.experimentType,
+      hardwareStepCount: segment.hardwareStepCount,
+      plan: segment.plan,
+    })),
+    skippedSegments,
+    mergedPlan: {
+      mode: "segmented_by_calendar_year",
+      distributionBasis: "row_count",
+      targetDays,
+      segmentCount: segmentResults.length,
+      segments: segmentResults.map((segment) => ({
+        year: segment.year,
+        requestedStartDate: segment.requestedStartDate,
+        requestedEndDate: segment.requestedEndDate,
+        actualStartDate: segment.actualStartDate,
+        actualEndDate: segment.actualEndDate,
+        rowCount: segment.rowCount,
+        targetDays: segment.targetDays,
+        hardwareStepCount: segment.hardwareStepCount,
+        plan: segment.plan,
+      })),
+      skippedSegments,
+    },
+    mergedHardwareSteps,
+  };
+}
+
 router.get("/regions", async (req, res) => {
   try {
     const regions = await getRegionDirectory();
@@ -201,6 +436,13 @@ router.post("/run", async (req, res) => {
     return res.status(400).json({
       code: -1,
       msg: "时间窗口格式不正确，需要 YYYY-MM-DD",
+    });
+  }
+
+  if (startDate > endDate) {
+    return res.status(400).json({
+      code: -1,
+      msg: "开始日期不能晚于结束日期",
     });
   }
 
@@ -247,12 +489,29 @@ router.post("/run", async (req, res) => {
       });
     }
 
-    const engineResult = await postJson(EQUIVALENCE_SERVICE_URL, {
-      experimentType,
-      targetDays,
-      returnHardwareSteps: true,
-      weatherData: weatherRows.map(toWeatherPayloadRow),
-    });
+    const requestedSegments = buildYearSegments(startDate, endDate);
+    const isMultiYearWindow = requestedSegments.length > 1;
+    const computationResult = isMultiYearWindow
+      ? await runMultiYearEquivalence({
+          experimentType,
+          targetDays,
+          weatherRows,
+          startDate,
+          endDate,
+        })
+      : await runSingleYearEquivalence({
+          experimentType,
+          targetDays,
+          weatherRows,
+        });
+
+    const experimentTypeLabel = isMultiYearWindow
+      ? computationResult.segmentSummaries?.[0]?.experimentType ||
+        EXPERIMENT_TYPE_LABEL[experimentType] ||
+        experimentType
+      : computationResult.experiment_type_label ||
+        EXPERIMENT_TYPE_LABEL[experimentType] ||
+        experimentType;
 
     res.json({
       code: 0,
@@ -266,13 +525,21 @@ router.post("/run", async (req, res) => {
           rowCount: weatherRows.length,
           dataCoverageStart: region.start_time,
           dataCoverageEnd: region.end_time,
+          segmentCount: requestedSegments.length,
+          segmentedByYear: isMultiYearWindow,
         },
         request: {
-          experimentType: engineResult.experiment_type_label || EXPERIMENT_TYPE_LABEL[experimentType] || experimentType,
+          experimentType: experimentTypeLabel,
           targetDays,
+          segmentedByYear: isMultiYearWindow,
+          segmentationMode: isMultiYearWindow ? "calendar_year" : "single_window",
         },
-        plan: engineResult.result?.plan || null,
-        hardwareSteps: engineResult.result?.hardware_steps || [],
+        plan: isMultiYearWindow ? computationResult.mergedPlan : computationResult.result?.plan || null,
+        hardwareSteps: isMultiYearWindow
+          ? computationResult.mergedHardwareSteps
+          : computationResult.result?.hardware_steps || [],
+        segments: isMultiYearWindow ? computationResult.segmentSummaries : undefined,
+        skippedSegments: isMultiYearWindow ? computationResult.skippedSegments : undefined,
       },
     });
   } catch (error) {

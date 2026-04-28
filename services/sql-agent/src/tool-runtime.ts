@@ -89,14 +89,9 @@ function normalizeValue(value: unknown): unknown {
   return value;
 }
 
-function validateSQL(query: string): string | null {
-  const dangerousKeywords =
-    /\b(INSERT|UPDATE|DELETE|DROP|TRUNCATE|ALTER|CREATE|REPLACE|GRANT|REVOKE)\b/i;
-
-  if (dangerousKeywords.test(query)) {
-    return '【系统安全拦截】当前 SQL Agent 只允许执行 SELECT 查询，禁止执行修改、删除、建表或其他写操作。请改写为只读查询。';
-  }
-
+// Raw runtime keeps only low-level DB access. SQL policy enforcement is applied
+// by guarded-tool-runtime before queries enter this module.
+function validateSQL(_query: string): string | null {
   return null;
 }
 
