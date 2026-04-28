@@ -23,15 +23,22 @@ function readDatabaseUrl() {
     return process.env.DATABASE_URL;
   }
 
-  const fallbackEnvPath = path.resolve(__dirname, "..", "..", "sql-agent", ".env");
+  const fallbackEnvPath = path.resolve(
+    __dirname,
+    "..",
+    "..",
+    "services",
+    "sql-agent",
+    ".env"
+  );
   if (!fs.existsSync(fallbackEnvPath)) {
-    throw new Error("DATABASE_URL 未设置，且未找到 sql-agent/.env");
+    throw new Error("DATABASE_URL 未设置，且未找到 services/sql-agent/.env");
   }
 
   const text = fs.readFileSync(fallbackEnvPath, "utf8");
   const match = text.match(/^\s*DATABASE_URL\s*=\s*["']?(.+?)["']?\s*$/m);
   if (!match) {
-    throw new Error("未能从 sql-agent/.env 解析 DATABASE_URL");
+    throw new Error("未能从 services/sql-agent/.env 解析 DATABASE_URL");
   }
   return match[1];
 }

@@ -1,0 +1,15 @@
+services:
+  agent-api:
+    build: .
+    container_name: dunhuang-agent-prod
+    env_file:
+      - ./.env
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./logs:/app/logs
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      DATABASE_URL: mysql://root:root@host.docker.internal:3308/dunhuang_agent
+      PORT: 3000

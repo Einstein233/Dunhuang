@@ -1,0 +1,11 @@
+name: equivalence-service
+
+services:
+  equivalence-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: equivalence-service
+    ports:
+      - "8000:8000"
+    restart: unless-stopped

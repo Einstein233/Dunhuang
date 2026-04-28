@@ -1,0 +1,50 @@
+name: dh-services
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: dunhuang-mysql-prod
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: dunhuang_agent
+    ports:
+      - "3308:3306"
+    volumes:
+      - dh_mysql_data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  sql-agent:
+    build:
+      context: ./sql-agent
+      dockerfile: Dockerfile
+    container_name: dunhuang-agent-prod
+    env_file:
+      - ./sql-agent/.env
+    environment:
+      DATABASE_URL: mysql://root:root@mysql:3306/dunhuang_agent
+      PORT: 3000
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./sql-agent/logs:/app/logs
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  equivalence-service:
+    build:
+      context: ./equivalence-service
+      dockerfile: Dockerfile
+    container_name: equivalence-service
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+volumes:
+  dh_mysql_data:

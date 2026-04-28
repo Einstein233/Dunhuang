@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>敦煌 SQL Agent</title>
+  <style>
+    :root {
+      --bg-1: #f7efe3;
+      --bg-2: #d8e6ec;
+      --panel: rgba(255, 252, 247, 0.92);
+      --panel-strong: #fffdf8;
+      --line: #d6d3cc;
+      --text: #253238;
+      --muted: #62727a;
+      --brand: #8d5a2b;
+      --brand-soft: #ead7c2;
+      --accent: #2f6f73;
+      --accent-soft: #d9ebea;
+      --danger: #b03a2e;
+      --danger-soft: #f8dfda;
+      --shadow: 0 24px 64px rgba(61, 48, 31, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(180deg, rgba(247, 239, 227, 0.78), rgba(216, 230, 236, 0.72)),
+        radial-gradient(circle at top left, rgba(255,255,255,0.52), transparent 32%),
+        url('./background1.png') center center / cover fixed no-repeat;
+      padding: 24px;
+    }
+
+    .shell {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .hero-card,
+    .hero-note {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.45);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      padding: 22px 24px;
+    }
+
+    .hero-card h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 4vw, 42px);
+      letter-spacing: 0.02em;
+      color: #5f3f22;
+    }
+
+    .hero-card p,
+    .hero-note p {
+      margin: 0;
+      line-height: 1.7;
+      color: var(--muted);
+    }
+
+    .hero-note {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .status-pill::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .status-pill.disconnected {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+
+    .chat-box {
+      background: var(--panel);
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,0.45);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      min-height: calc(100vh - 220px);
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(10px);
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 22px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.58), rgba(250,246,239,0.78)),
+        repeating-linear-gradient(
+          0deg,
+          rgba(141,90,43,0.02) 0,
+          rgba(141,90,43,0.02) 28px,
+          transparent 28px,
+          transparent 56px
+        );
+    }
+
+    .message {
+      margin-bottom: 16px;
+      max-width: 94%;
+      border-radius: 22px;
+      padding: 16px 18px;
+      line-height: 1.7;
+      word-break: break-word;
+    }
+
+    .message.user {
+      margin-left: auto;
+      background: linear-gradient(135deg, #7c4b1f, #a7703a);
+      color: white;
+      border-bottom-right-radius: 8px;
+      box-shadow: 0 18px 30px rgba(124, 75, 31, 0.24);
+    }
+
+    .message.assistant {
+      background: var(--panel-strong);
+      border: 1px solid rgba(141,90,43,0.12);
+      border-bottom-left-radius: 8px;
+    }
+
+    .message.error {
+      background: var(--danger-soft);
+      border: 1px solid rgba(176,58,46,0.18);
+      color: var(--danger);
+    }
+
+    .assistant-shell {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .section-title {
+      margin-bottom: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--brand);
+      text-transform: uppercase;
+    }
+
+    .diagnostic-kind {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: var(--brand-soft);
+      color: var(--brand);
+      margin-bottom: 10px;
+    }
+
+    details.stream-panel {
+      border: 1px solid rgba(141,90,43,0.14);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.72);
+      overflow: hidden;
+    }
+
+    details.stream-panel summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 13px 16px;
+      font-weight: 700;
+      color: #5f3f22;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      user-select: none;
+    }
+
+    details.stream-panel summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.stream-panel summary::before {
+      content: "▸";
+      font-size: 13px;
+      transition: transform 0.2s ease;
+    }
+
+    details.stream-panel[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    .panel-body {
+      padding: 0 16px 16px;
+    }
+
+    .thinking-stream {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .thinking-step {
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(245, 241, 233, 0.9);
+      color: var(--muted);
+      font-size: 13px;
+      border: 1px solid rgba(141,90,43,0.08);
+    }
+
+    .thinking-step.thinking {
+      background: rgba(234, 242, 245, 0.86);
+      border-color: rgba(47,111,115,0.12);
+      color: var(--accent);
+    }
+
+    .thinking-step.reasoning {
+      background: rgba(234, 242, 245, 0.86);
+      border-color: rgba(47,111,115,0.12);
+      color: var(--text);
+    }
+
+    .thinking-step-title {
+      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+    }
+
+    .thinking-step-body {
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .thinking-step.tool {
+      background: rgba(234, 240, 255, 0.84);
+      border-color: rgba(70, 99, 173, 0.12);
+      color: #4760a1;
+    }
+
+    .thinking-step.error {
+      background: var(--danger-soft);
+      border-color: rgba(176,58,46,0.14);
+      color: var(--danger);
+    }
+
+    .model-io-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .model-io-card {
+      border-radius: 16px;
+      border: 1px solid rgba(141,90,43,0.12);
+      background: rgba(255,255,255,0.88);
+      overflow: hidden;
+    }
+
+    .model-io-card.input {
+      box-shadow: inset 0 0 0 1px rgba(47,111,115,0.10);
+    }
+
+    .model-io-card.output {
+      box-shadow: inset 0 0 0 1px rgba(70, 99, 173, 0.12);
+    }
+
+    .model-io-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: rgba(244, 238, 230, 0.9);
+      border-bottom: 1px solid rgba(141,90,43,0.10);
+    }
+
+    .model-io-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #5f3f22;
+    }
+
+    .model-io-summary {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .model-io-body {
+      padding: 12px 14px 14px;
+    }
+
+    .model-io-json {
+      margin: 0;
+      padding: 14px;
+      border-radius: 12px;
+      background: #1f2329;
+      color: #eef3fb;
+      font-size: 12px;
+      line-height: 1.6;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: "Consolas", "SFMono-Regular", monospace;
+    }
+
+    .sql-block {
+      background: #1f2329;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .sql-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #2a3038;
+      color: #d2dae5;
+      font-size: 12px;
+    }
+
+    .sql-copy-btn {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      cursor: pointer;
+      background: #4e9d93;
+      color: white;
+      font-size: 12px;
+    }
+
+    .sql-code {
+      margin: 0;
+      padding: 14px 16px;
+      color: #f5f7fa;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.6;
+      font-family: "Consolas", "SFMono-Regular", monospace;
+      white-space: pre-wrap;
+    }
+
+    .artifacts {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .table-container,
+    .chart-container,
+    .answer-block {
+      border: 1px solid rgba(141,90,43,0.12);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.82);
+      padding: 14px;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .data-table th,
+    .data-table td {
+      border-bottom: 1px solid #ece7de;
+      padding: 10px 12px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .data-table th {
+      background: #f5eee3;
+      color: #6b4826;
+      position: sticky;
+      top: 0;
+    }
+
+    .table-caption {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .chart {
+      width: 100%;
+      height: 440px;
+    }
+
+    .answer-block {
+      position: relative;
+    }
+
+    .message-content {
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .message-content h1,
+    .message-content h2,
+    .message-content h3 {
+      margin: 12px 0 8px;
+      color: #5f3f22;
+    }
+
+    .message-content p {
+      margin: 10px 0;
+    }
+
+    .message-content code {
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: #f4eee6;
+      font-family: "Consolas", monospace;
+      font-size: 0.92em;
+    }
+
+    .message-content pre {
+      background: #1f2329;
+      color: #f5f7fa;
+      padding: 14px;
+      border-radius: 14px;
+      overflow-x: auto;
+    }
+
+    .message-content blockquote {
+      margin: 10px 0;
+      border-left: 4px solid var(--brand);
+      background: #faf4eb;
+      padding: 10px 14px;
+      border-radius: 10px;
+      color: var(--muted);
+    }
+
+    .streaming-text::after {
+      content: "▍";
+      margin-left: 2px;
+      animation: blink 1s infinite;
+      color: var(--brand);
+    }
+
+    @keyframes blink {
+      0%, 45% { opacity: 1; }
+      46%, 100% { opacity: 0; }
+    }
+
+    .input-area {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 12px;
+      padding: 18px 22px 22px;
+      border-top: 1px solid rgba(141,90,43,0.12);
+      background: rgba(255, 251, 244, 0.9);
+    }
+
+    #messageInput {
+      width: 100%;
+      border: 1px solid rgba(141,90,43,0.18);
+      background: white;
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    #messageInput:focus {
+      border-color: rgba(47,111,115,0.42);
+      box-shadow: 0 0 0 4px rgba(47,111,115,0.08);
+    }
+
+    button {
+      border: none;
+      border-radius: 16px;
+      padding: 0 18px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 48px;
+    }
+
+    #sendBtn {
+      background: linear-gradient(135deg, #2f6f73, #4b8d85);
+      color: white;
+    }
+
+    #clearBtn {
+      background: linear-gradient(135deg, #8d5a2b, #b1753a);
+      color: white;
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .loading::before {
+      content: "";
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(47,111,115,0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 920px) {
+      body {
+        padding: 12px;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .chat-box {
+        min-height: calc(100vh - 170px);
+      }
+
+      .input-area {
+        grid-template-columns: 1fr;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="hero-card">
+        <h1>敦煌 SQL Agent</h1>
+        <p>现在除了结果文本，还会展示结构化诊断过程：分析计划、选表策略、联表路径、SQL 报错和重试原因。这样你在前端就能直接看见“为什么查不到”。</p>
+      </div>
+      <div class="hero-note">
+        <div>
+          <div class="status-pill" id="status">正在检查服务状态</div>
+        </div>
+        <p>新的气象结构默认以 <code>station</code>、<code>weather_observation</code> 和 <code>vw_weather_query</code> 为主，Agent 会优先识别这一套结构，而不是旧的地区分表。</p>
+      </div>
+    </section>
+
+    <section class="chat-box">
+      <div class="messages" id="messages">
+        <div class="message assistant">
+          可以直接提问，例如：<code>查询敦煌 2024 年逐小时温度时间序列</code>。我会把分析过程、SQL 语句和结果一起展示出来。
+        </div>
+      </div>
+
+      <div class="input-area">
+        <input
+          id="messageInput"
+          type="text"
+          placeholder="请输入查询需求，例如：敦煌 2024 年的降雨时间序列"
+        />
+        <button id="sendBtn" type="button">发送</button>
+        <button id="clearBtn" type="button">清空对话</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    const API_URL_STREAM = `${API_BASE}/api/chat/stream`;
+    const API_HEALTH = `${API_BASE}/api/health`;
+    const API_RESET = `${API_BASE}/api/reset`;
+
+    const messagesDiv = document.getElementById('messages');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const statusDiv = document.getElementById('status');
+    const CONVERSATION_STORAGE_KEY = 'sql-agent.conversation.v1';
+
+    let conversationState = loadConversationState();
+
+    let currentStreamState = createEmptyStreamState();
+
+    function createEmptyStreamState() {
+      return {
+        messageDiv: null,
+        thinkingBody: null,
+        modelIOBody: null,
+        modelIOPanel: null,
+        sqlBody: null,
+        sqlPanel: null,
+        answerContent: null,
+        artifacts: null,
+        textBuffer: '',
+        chartInstances: [],
+        renderedReasoningRounds: new Set(),
+      };
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function getWelcomeMessage() {
+      return '可以直接提问，例如：<code>查询敦煌 2024 年逐小时温度时间序列</code>。我会把分析过程、SQL 语句和结果一起展示出来。';
+    }
+
+    function createClientSessionId() {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID();
+      }
+
+      return `session-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function normalizeConversationHistory(history) {
+      if (!Array.isArray(history)) {
+        return [];
+      }
+
+      return history.filter((item) =>
+        item &&
+        (item.role === 'user' || item.role === 'assistant') &&
+        typeof item.content === 'string'
+      );
+    }
+
+    function loadConversationState() {
+      try {
+        const raw = window.localStorage.getItem(CONVERSATION_STORAGE_KEY);
+        if (!raw) {
+          return {
+            sessionId: createClientSessionId(),
+            history: [],
+          };
+        }
+
+        const parsed = JSON.parse(raw);
+        return {
+          sessionId:
+            typeof parsed?.sessionId === 'string' && parsed.sessionId.trim()
+              ? parsed.sessionId.trim()
+              : createClientSessionId(),
+          history: normalizeConversationHistory(parsed?.history),
+        };
+      } catch (error) {
+        return {
+          sessionId: createClientSessionId(),
+          history: [],
+        };
+      }
+    }
+
+    function saveConversationState() {
+      window.localStorage.setItem(CONVERSATION_STORAGE_KEY, JSON.stringify(conversationState));
+    }
+
+    function updateConversationState(sessionId, history) {
+      conversationState = {
+        sessionId:
+          typeof sessionId === 'string' && sessionId.trim()
+            ? sessionId.trim()
+            : conversationState.sessionId,
+        history: normalizeConversationHistory(history),
+      };
+      saveConversationState();
+    }
+
+    function resetConversationState() {
+      conversationState = {
+        sessionId: createClientSessionId(),
+        history: [],
+      };
+      saveConversationState();
+    }
+
+    function resetStreamingState() {
+      currentStreamState.chartInstances.forEach((chart) => {
+        try {
+          chart.dispose();
+        } catch (error) {
+        }
+      });
+
+      currentStreamState = createEmptyStreamState();
+    }
+
+    function renderConversationHistory() {
+      resetStreamingState();
+      messagesDiv.innerHTML = '';
+
+      if (!conversationState.history.length) {
+        addMessage(getWelcomeMessage(), 'assistant');
+        return;
+      }
+
+      conversationState.history.forEach((item) => {
+        addMessage(item.content, item.role === 'assistant' ? 'assistant' : 'user');
+      });
+    }
+
+    async function checkConnection() {
+      try {
+        const response = await fetch(API_HEALTH);
+        if (!response.ok) {
+          throw new Error('服务返回异常状态');
+        }
+
+        statusDiv.textContent = '服务已连接';
+        statusDiv.classList.remove('disconnected');
+      } catch (error) {
+        statusDiv.textContent = '服务未连接';
+        statusDiv.classList.add('disconnected');
+      }
+    }
+
+    function addMessage(text, type) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${type}`;
+      messageDiv.innerHTML = type === 'assistant'
+        ? `<div class="message-content">${marked.parse(text)}</div>`
+        : escapeHtml(text);
+      messagesDiv.appendChild(messageDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function createStreamingMessageContainer() {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message assistant';
+      messageDiv.innerHTML = `
+        <div class="assistant-shell">
+          <details class="stream-panel" open>
+            <summary>思考过程</summary>
+            <div class="panel-body">
+              <div class="thinking-stream"></div>
+            </div>
+          </details>
+
+          <details class="stream-panel">
+            <summary>模型 I/O</summary>
+            <div class="panel-body">
+              <div class="model-io-list"></div>
+            </div>
+          </details>
+
+          <details class="stream-panel hidden">
+            <summary>SQL 记录</summary>
+            <div class="panel-body">
+              <div class="sql-body"></div>
+            </div>
+          </details>
+
+          <div class="artifacts"></div>
+
+          <section class="answer-block">
+            <div class="section-title">回答</div>
+            <div class="message-content streaming-text"></div>
+          </section>
+        </div>
+      `;
+
+      messagesDiv.appendChild(messageDiv);
+
+      currentStreamState = {
+        messageDiv,
+        thinkingBody: messageDiv.querySelector('.thinking-stream'),
+        modelIOBody: messageDiv.querySelector('.model-io-list'),
+        modelIOPanel: messageDiv.querySelectorAll('.stream-panel')[1],
+        sqlBody: messageDiv.querySelector('.sql-body'),
+        sqlPanel: messageDiv.querySelectorAll('.stream-panel')[2],
+        answerContent: messageDiv.querySelector('.message-content'),
+        artifacts: messageDiv.querySelector('.artifacts'),
+        textBuffer: '',
+        chartInstances: [],
+        renderedReasoningRounds: new Set(),
+      };
+
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function addThinkingStep(text, type = 'thinking') {
+      if (!currentStreamState.thinkingBody) {
+        return;
+      }
+
+      const step = document.createElement('div');
+      step.className = `thinking-step ${type}`;
+      step.textContent = text;
+      currentStreamState.thinkingBody.appendChild(step);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function extractReasoningContent(payload) {
+      return payload?.choices?.[0]?.message?.reasoning_content || '';
+    }
+
+    function addReasoningStep(round, reasoningContent) {
+      if (!currentStreamState.thinkingBody || !reasoningContent) {
+        return;
+      }
+
+      if (currentStreamState.renderedReasoningRounds?.has(round)) {
+        return;
+      }
+
+      const step = document.createElement('section');
+      step.className = 'thinking-step reasoning';
+
+      const title = document.createElement('div');
+      title.className = 'thinking-step-title';
+      title.textContent = `第 ${round} 轮思考`;
+
+      const body = document.createElement('div');
+      body.className = 'thinking-step-body';
+      body.textContent = reasoningContent;
+
+      step.appendChild(title);
+      step.appendChild(body);
+      currentStreamState.thinkingBody.appendChild(step);
+      currentStreamState.renderedReasoningRounds?.add(round);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function appendToFinalAnswer(text) {
+      if (!currentStreamState.answerContent) {
+        return;
+      }
+
+      currentStreamState.textBuffer += text;
+      currentStreamState.answerContent.innerHTML = marked.parse(currentStreamState.textBuffer);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function formatJsonBlock(value) {
+      try {
+        return JSON.stringify(value, null, 2);
+      } catch (error) {
+        return String(value);
+      }
+    }
+
+    function renderModelIO(message) {
+      if (!currentStreamState.modelIOBody) {
+        return;
+      }
+
+      if (message.direction === 'output') {
+        const reasoningContent = extractReasoningContent(message.payload);
+        if (reasoningContent) {
+          addReasoningStep(message.round, reasoningContent);
+        }
+      }
+
+      if (currentStreamState.modelIOPanel) {
+        currentStreamState.modelIOPanel.classList.remove('hidden');
+      }
+
+      const card = document.createElement('article');
+      card.className = `model-io-card ${message.direction}`;
+      card.innerHTML = `
+        <div class="model-io-header">
+          <div>
+            <div class="model-io-title">第 ${message.round} 轮 · ${escapeHtml(message.label)}</div>
+            <div class="model-io-summary">${escapeHtml(message.summary)}</div>
+          </div>
+          <div class="diagnostic-kind">${message.direction === 'input' ? 'INPUT' : 'OUTPUT'}</div>
+        </div>
+        <div class="model-io-body">
+          <pre class="model-io-json">${escapeHtml(formatJsonBlock(message.payload))}</pre>
+        </div>
+      `;
+
+      currentStreamState.modelIOBody.appendChild(card);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function renderTable(tableData) {
+      if (!currentStreamState.artifacts) {
+        return;
+      }
+
+      const wrapper = document.createElement('section');
+      wrapper.className = 'table-container';
+
+      let html = '<div class="section-title">结果表格</div><div class="table-scroll"><table class="data-table"><thead><tr>';
+      tableData.columns.forEach((column) => {
+        html += `<th>${escapeHtml(column)}</th>`;
+      });
+      html += '</tr></thead><tbody>';
+
+      tableData.rows.forEach((row) => {
+        html += '<tr>';
+        row.forEach((cell) => {
+          const value = cell === null || cell === undefined ? '' : String(cell);
+          html += `<td>${escapeHtml(value)}</td>`;
+        });
+        html += '</tr>';
+      });
+
+      html += `</tbody></table></div><div class="table-caption">共 ${tableData.rows.length} 行</div>`;
+      wrapper.innerHTML = html;
+      currentStreamState.artifacts.appendChild(wrapper);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function renderChart(chartData) {
+      if (!currentStreamState.artifacts || chartData?.error) {
+        return;
+      }
+
+      const chartId = `chart-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      const wrapper = document.createElement('section');
+      wrapper.className = 'chart-container';
+      wrapper.innerHTML = `
+        <div class="section-title">图表结果</div>
+        <div id="${chartId}" class="chart"></div>
+      `;
+      currentStreamState.artifacts.appendChild(wrapper);
+
+      requestAnimationFrame(() => {
+        const chartElement = document.getElementById(chartId);
+        if (!chartElement) {
+          return;
+        }
+
+        const chart = echarts.init(chartElement);
+        chart.setOption(chartData);
+        currentStreamState.chartInstances.push(chart);
+      });
+
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function renderSQL(sql) {
+      if (!currentStreamState.sqlBody || !currentStreamState.sqlPanel) {
+        return;
+      }
+
+      currentStreamState.sqlPanel.classList.remove('hidden');
+
+      const sqlIndex = currentStreamState.sqlBody.children.length + 1;
+      const block = document.createElement('div');
+      block.className = 'sql-block';
+      block.innerHTML = `
+        <div class="sql-header">
+          <span>SQL #${sqlIndex}</span>
+          <button class="sql-copy-btn" type="button">复制</button>
+        </div>
+        <pre class="sql-code">${escapeHtml(sql)}</pre>
+      `;
+
+      block.querySelector('.sql-copy-btn').addEventListener('click', async (event) => {
+        const button = event.currentTarget;
+        try {
+          await navigator.clipboard.writeText(sql);
+          button.textContent = '已复制';
+          setTimeout(() => {
+            button.textContent = '复制';
+          }, 1500);
+        } catch (error) {
+          button.textContent = '复制失败';
+        }
+      });
+
+      currentStreamState.sqlBody.appendChild(block);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function finishStreaming() {
+      if (currentStreamState.answerContent) {
+        currentStreamState.answerContent.classList.remove('streaming-text');
+      }
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function handleSSEMessage(message) {
+      switch (message.type) {
+        case 'thinking':
+          break;
+        case 'diagnostic':
+          break;
+        case 'model_io':
+          renderModelIO(message);
+          break;
+        case 'tool_start':
+          break;
+        case 'tool_result':
+          break;
+        case 'sql':
+          renderSQL(message.sql);
+          break;
+        case 'table':
+          renderTable(message);
+          break;
+        case 'chart':
+          renderChart(message.config);
+          break;
+        case 'text':
+          appendToFinalAnswer(message.content);
+          break;
+        case 'error':
+          addThinkingStep(`错误：${message.message}`, 'error');
+          break;
+        case 'done':
+          updateConversationState(message.sessionId, message.history);
+          finishStreaming();
+          break;
+      }
+    }
+
+    async function sendStreamingMessage() {
+      const message = messageInput.value.trim();
+      if (!message) {
+        messageInput.focus();
+        return;
+      }
+
+      addMessage(message, 'user');
+      createStreamingMessageContainer();
+
+      messageInput.value = '';
+      messageInput.disabled = true;
+      sendBtn.disabled = true;
+      clearBtn.disabled = true;
+      statusDiv.innerHTML = '<span class="loading">正在执行查询</span>';
+
+      try {
+        const response = await fetch(API_URL_STREAM, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message,
+            sessionId: conversationState.sessionId,
+            history: conversationState.history,
+          }),
+        });
+
+        if (!response.ok || !response.body) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            break;
+          }
+
+          buffer += decoder.decode(value, { stream: true });
+          const chunks = buffer.split('\n\n');
+          buffer = chunks.pop() || '';
+
+          for (const chunk of chunks) {
+            const line = chunk
+              .split('\n')
+              .find((currentLine) => currentLine.startsWith('data: '));
+
+            if (!line) {
+              continue;
+            }
+
+            const payload = line.slice(6);
+            if (payload === '[DONE]') {
+              finishStreaming();
+              continue;
+            }
+
+            try {
+              handleSSEMessage(JSON.parse(payload));
+            } catch (error) {
+              console.error('解析 SSE 消息失败:', error, payload);
+            }
+          }
+        }
+
+        statusDiv.textContent = '服务已连接';
+        statusDiv.classList.remove('disconnected');
+      } catch (error) {
+        console.error('SSE 请求失败:', error);
+        addMessage(`请求失败：${error.message}`, 'error');
+        statusDiv.textContent = '服务未连接';
+        statusDiv.classList.add('disconnected');
+      } finally {
+        finishStreaming();
+        messageInput.disabled = false;
+        sendBtn.disabled = false;
+        clearBtn.disabled = false;
+        messageInput.focus();
+      }
+    }
+
+    async function clearChat() {
+      const confirmed = window.confirm('确定清空当前对话和日志吗？');
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        const response = await fetch(API_RESET, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: conversationState.sessionId }),
+        });
+        if (!response.ok) {
+          throw new Error('清空失败');
+        }
+
+        messagesDiv.innerHTML = `
+          <div class="message assistant">
+            可以继续提问。我会展示分析过程、SQL 语句和最终结果。
+          </div>
+        `;
+        statusDiv.textContent = '服务已连接';
+        statusDiv.classList.remove('disconnected');
+      } catch (error) {
+        addMessage(`清空失败：${error.message}`, 'error');
+      }
+    }
+
+    async function clearChat() {
+      const confirmed = window.confirm('确定清空当前对话和日志吗？');
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        const response = await fetch(API_RESET, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: conversationState.sessionId }),
+        });
+
+        if (!response.ok) {
+          throw new Error('清空失败');
+        }
+
+        resetConversationState();
+        renderConversationHistory();
+        statusDiv.textContent = '服务已连接';
+        statusDiv.classList.remove('disconnected');
+        messageInput.focus();
+      } catch (error) {
+        addMessage(`清空失败：${error.message}`, 'error');
+      }
+    }
+
+    sendBtn.addEventListener('click', sendStreamingMessage);
+    clearBtn.addEventListener('click', clearChat);
+    messageInput.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        sendStreamingMessage();
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      currentStreamState.chartInstances.forEach((chart) => chart.resize());
+    });
+
+    renderConversationHistory();
+    checkConnection();
+  </script>
+</body>
+</html>

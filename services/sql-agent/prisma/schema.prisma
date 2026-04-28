@@ -1,0 +1,258 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model conditions {
+  id          Int       @id @default(autoincrement())
+  val         String?   @db.VarChar(6000)
+  type        String?   @db.VarChar(11)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model dict {
+  id          Int       @id @default(autoincrement())
+  name        String?   @db.VarChar(255)
+  type        String?   @db.VarChar(255)
+  remark      String?   @db.VarChar(255)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model dict_item {
+  id          Int       @id @default(autoincrement())
+  dict_id     Int?
+  dict_label  String?   @default("") @db.VarChar(255)
+  dict_value  String?   @default("") @db.VarChar(255)
+  dict_sort   Int?      @default(0)
+  dict_class  String?   @default("") @db.VarChar(255)
+  status      Int?      @default(1)
+  remark      String?   @default("") @db.VarChar(255)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model ditor {
+  id          Int       @id @default(autoincrement())
+  val         String?   @db.Text
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model files {
+  id          Int       @id @default(autoincrement())
+  val         String?   @db.VarChar(6000)
+  type        Int?      @default(1)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model more {
+  id          Int       @id @default(autoincrement())
+  name        String    @default("") @db.VarChar(255)
+  remark      String?   @db.VarChar(255)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model roles {
+  id            Int       @id @default(autoincrement())
+  name          String    @default("") @db.VarChar(225)
+  roles         String    @default("") @db.VarChar(10000)
+  checked_roles String    @default("") @db.VarChar(255)
+  role_key      String?   @default("") @db.VarChar(10000)
+  update_time   DateTime? @db.Timestamp(0)
+  create_time   DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model router_menu {
+  id          Int       @id @default(autoincrement())
+  parent_id   Int       @default(0)
+  title       String?   @default("") @db.VarChar(255)
+  icon        String?   @default("") @db.VarChar(255)
+  no_cache    Int?      @default(1)
+  meta        String    @default("") @db.VarChar(255)
+  path        String    @default("/") @db.VarChar(255)
+  hidden      Boolean   @default(false)
+  redirect    String    @default("") @db.VarChar(255)
+  always_show Boolean   @default(false)
+  name        String    @default("") @db.VarChar(255)
+  layout      Boolean   @default(false)
+  parent_view Boolean   @default(false)
+  component   String    @default("/") @db.VarChar(255)
+  sort        Int       @default(0)
+  alone       Int       @default(0)
+  role_key    String?   @default("") @db.VarChar(255)
+  menu_type   String    @default("C") @db.VarChar(255)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model tests {
+  id          Int       @id @default(autoincrement())
+  name        String?   @db.VarChar(255)
+  remark      String?   @db.VarChar(255)
+  more_id     Int?
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model theme {
+  id                   Int       @id @default(autoincrement())
+  user_id              Int?
+  menu_bg              String?   @default("") @db.VarChar(255)
+  menu_sub_bg          String?   @default("") @db.VarChar(255)
+  menu_text            String?   @default("") @db.VarChar(255)
+  menu_active_text     String?   @default("") @db.VarChar(255)
+  menu_sub_active_text String?   @default("") @db.VarChar(255)
+  menu_hover_bg        String?   @default("") @db.VarChar(255)
+  update_time          DateTime? @db.Timestamp(0)
+  create_time          DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model user {
+  id          Int       @id @default(autoincrement())
+  name        String    @default("") @db.VarChar(255)
+  url         String?   @db.VarChar(1000)
+  status      Int       @default(1)
+  roles_id    String    @default("") @db.VarChar(255)
+  remark      String?   @default("") @db.VarChar(255)
+  admin       Int       @default(0)
+  pwd         String    @default("") @db.VarChar(255)
+  more_id     Int       @default(0)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// Current unified weather fact table used by the backend routes and SQL agent prompts.
+model weather_data {
+  station_code                String   @db.VarChar(50)
+  granularity                 Int      @db.TinyInt
+  record_time                 DateTime @db.DateTime(0)
+  avg_temperature             Decimal? @db.Decimal(7, 2)
+  relativehumidity_2m         Decimal? @db.Decimal(5, 2)
+  rain_sum                    Decimal? @db.Decimal(8, 2)
+  snow_sum                    Decimal? @db.Decimal(8, 2)
+  max_continuous_wind_speed   Decimal? @db.Decimal(6, 2)
+  windgusts_max               Decimal? @db.Decimal(6, 2)
+  winddirection_dominant      Int?     @db.SmallInt
+  shortwave_radiation_sum     Decimal? @db.Decimal(8, 2)
+  create_time                 DateTime? @default(now()) @db.Timestamp(0)
+
+  @@id([station_code, granularity, record_time])
+}
+
+/// Directory table used by download/query routes to map province-city to station_code and time coverage.
+model weather_directory {
+  id           Int       @id @default(autoincrement())
+  province     String    @db.VarChar(50)
+  city         String    @db.VarChar(50)
+  station_code String    @default("UNKNOWN") @db.VarChar(50)
+  granularity  Int       @db.TinyInt
+  start_time   DateTime  @db.DateTime(0)
+  end_time     DateTime  @db.DateTime(0)
+  total_count  Int       @default(0)
+  update_time  DateTime? @db.Timestamp(0)
+  create_time  DateTime? @default(now()) @db.Timestamp(0)
+
+  @@unique([province, city, station_code, granularity], map: "uk_prov_city_station_gran")
+  @@index([province, city], map: "idx_province_city")
+}
+
+/// Station to province/city mapping used when syncing weather_directory metadata.
+model station_info {
+  station_code String    @db.VarChar(50)
+  province     String    @db.VarChar(50)
+  city         String    @db.VarChar(50)
+  latitude     Decimal?  @db.Decimal(10, 8)
+  longitude    Decimal?  @db.Decimal(11, 8)
+  granularity  Int       @default(2) @db.TinyInt
+  create_time  DateTime? @default(now()) @db.Timestamp(0)
+
+  @@id([station_code, granularity])
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model rollback_20260413_sys_menu {
+  menu_id     BigInt    @id @default(autoincrement())
+  parent_id   BigInt    @default(0)
+  menu_name   String?   @default("") @db.VarChar(255)
+  icon        String?   @default("") @db.VarChar(255)
+  no_cache    Int?      @default(1)
+  meta        String    @default("") @db.VarChar(255)
+  path        String    @default("/") @db.VarChar(255)
+  hidden      Boolean   @default(false)
+  redirect    String    @default("") @db.VarChar(255)
+  always_show Boolean   @default(false)
+  name        String    @default("") @db.VarChar(255)
+  layout      Boolean   @default(false)
+  parent_view Boolean   @default(false)
+  component   String    @default("/") @db.VarChar(255)
+  sort        Int       @default(0)
+  alone       Int       @default(0)
+  perms       String?   @default("") @db.VarChar(255)
+  menu_type   String    @default("C") @db.Char(1)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model rollback_20260413_sys_role {
+  role_id       BigInt    @id @default(autoincrement())
+  role_name     String    @default("") @db.VarChar(225)
+  roles         String    @default("") @db.VarChar(10000)
+  checked_roles String    @default("") @db.VarChar(255)
+  role_key      String?   @default("") @db.VarChar(10000)
+  status        String    @default("0") @db.Char(1)
+  del_flag      String    @default("0") @db.Char(1)
+  update_time   DateTime? @db.Timestamp(0)
+  create_time   DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model rollback_20260413_sys_role_menu {
+  role_id BigInt
+  menu_id BigInt
+
+  @@id([role_id, menu_id])
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model rollback_20260413_sys_user {
+  user_id     BigInt    @id @default(autoincrement())
+  user_name   String    @default("") @db.VarChar(255)
+  nick_name   String    @default("") @db.VarChar(255)
+  url         String?   @db.VarChar(1000)
+  status      String    @default("0") @db.Char(1)
+  del_flag    String    @default("0") @db.Char(1)
+  roles_id    String    @default("") @db.VarChar(255)
+  remark      String?   @default("") @db.VarChar(255)
+  admin       Int       @default(0)
+  password    String    @default("") @db.VarChar(255)
+  more_id     Int       @default(0)
+  update_time DateTime? @db.Timestamp(0)
+  create_time DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model rollback_20260413_sys_user_role {
+  user_id BigInt
+  role_id BigInt
+
+  @@id([user_id, role_id])
+}
+

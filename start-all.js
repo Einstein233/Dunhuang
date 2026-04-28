@@ -12,8 +12,8 @@ const colors = {
 };
 
 const dockerConfig = {
-  name: "sql-agent(docker)",
-  cwd: path.join(__dirname, "sql-agent"),
+  name: "services(docker)",
+  cwd: path.join(__dirname, "services"),
   command: "docker",
   upArgs: ["compose", "up", "-d", "--build"],
   downArgs: ["compose", "down"],
@@ -123,6 +123,7 @@ async function startAll() {
   log(colors.title, "front_con:             http://127.0.0.1:2023");
   log(colors.title, "back_con:              http://127.0.0.1:3000");
   log(colors.title, "sql-agent ui/api:      http://127.0.0.1:3001");
+  log(colors.title, "equivalence-service:   http://127.0.0.1:8000");
   log(colors.title, "mysql (docker):        127.0.0.1:3308");
   log(colors.title, "Press Ctrl+C to stop all services.");
   log(colors.title, "");
