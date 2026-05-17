@@ -627,18 +627,4 @@ router.post("/delCondition", async (req, res) => {
   await pools({ sql, val: [obj.id], run: false, res, req });
 });
 
-router.post("/weatherInfo", async (req, res) => {
-  try {
-    const { lat, lng, date } = req.body.data;
-    if (!lat || !lng || !date) {
-      return res.send(utils.returnData({ code: -1, msg: "缺少必要的参数！", req }));
-    }
-    let sql = "SELECT * FROM qixiang_data WHERE year_month_day=? AND latitude=? AND longitude=?";
-    let { result } = await pools({ sql, val: [date, lat, lng], res, req });
-    res.send(utils.returnData({ data: result }));
-  } catch (error) {
-    res.send({ code: -1, msg: "获取天气信息失败", req });
-  }
-});
-
 module.exports = router;

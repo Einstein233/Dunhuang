@@ -6,7 +6,11 @@
       "PowerShell(& \"C:\\\\Users\\\\wang xiaozheng\\\\miniconda3\\\\Scripts\\\\conda.exe\" --version)",
       "PowerShell($env:Path = \"C:\\\\Users\\\\wang xiaozheng\\\\miniconda3;C:\\\\Users\\\\wang xiaozheng\\\\miniconda3\\\\Scripts;C:\\\\Users\\\\wang xiaozheng\\\\miniconda3\\\\Library\\\\bin;C:\\\\Users\\\\wang xiaozheng\\\\miniconda3\\\\Library\\\\mingw-w64\\\\bin;\" + $env:Path; conda --version)",
       "PowerShell(Get-Command git -ErrorAction SilentlyContinue)",
-      "PowerShell(winget list --name \"Git\" 2>$null)"
+      "PowerShell(winget list --name \"Git\" 2>$null)",
+      "PowerShell(docker exec dunhuang-mysql-prod mysql -uroot -proot -e \"SHOW DATABASES; USE dunhuang_agent; SHOW TABLES;\" 2>&1)",
+      "PowerShell(\\(Get-Content \"c:\\\\Users\\\\wang xiaozheng\\\\Desktop\\\\project_files\\\\dunhuang\\\\DH_web\\\\services\\\\mysql\\\\init\\\\weather_data.sql\" | Measure-Object -Line\\).Lines)",
+      "PowerShell(docker exec dunhuang-mysql-prod mysql -uroot -proot -e \"USE dunhuang_agent; SELECT id, name, remark FROM user; SELECT id, name FROM roles; SELECT id, title FROM router_menu LIMIT 5; SELECT id, name, remark FROM dict;\" 2>&1)",
+      "PowerShell(\\(Get-Item \"c:\\\\Users\\\\wang xiaozheng\\\\Desktop\\\\project_files\\\\dunhuang\\\\DH_web\\\\vue_admin_backup.sql\"\\).Length / 1MB)"
     ]
   }
 }

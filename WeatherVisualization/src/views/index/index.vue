@@ -13,7 +13,6 @@ import RightBottom from "./right-bottom.vue";
 import Map from "@/components/Map/index.vue";
 import { ref, nextTick, onBeforeUnmount } from "vue";
 import ToolBar from "@/components/TooolBar/index.vue";   // 日期筛选
-import WeatherInfoCard from "@/components/WeatherInfoCard/index.vue";
 import ServerStatus from "@/components/ServerStatus/index.vue";
 import { regionCodes } from "./bottom.map";
 
