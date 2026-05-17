@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(chmod 644 vue_admin_backup.sql vue_admin_backup.sql.bak)"
+      "Bash(chmod 644 vue_admin_backup.sql vue_admin_backup.sql.bak)",
+      "PowerShell($condaPaths = @\\( \"C:\\\\Users\\\\wang xiaozheng\\\\miniconda3\", \"C:\\\\Users\\\\wang xiaozheng\\\\miniconda3\\\\Scripts\", \"C:\\\\Users\\\\wang xiaozheng\\\\miniconda3\\\\Library\\\\bin\" \\); foreach \\($p in $condaPaths\\) { Write-Host \"Checking: $p -> $\\([System.IO.Directory]::Exists\\($p\\)\\)\" })",
+      "PowerShell(& \"C:\\\\Users\\\\wang xiaozheng\\\\miniconda3\\\\Scripts\\\\conda.exe\" --version)",
+      "PowerShell($env:Path = \"C:\\\\Users\\\\wang xiaozheng\\\\miniconda3;C:\\\\Users\\\\wang xiaozheng\\\\miniconda3\\\\Scripts;C:\\\\Users\\\\wang xiaozheng\\\\miniconda3\\\\Library\\\\bin;C:\\\\Users\\\\wang xiaozheng\\\\miniconda3\\\\Library\\\\mingw-w64\\\\bin;\" + $env:Path; conda --version)",
+      "PowerShell(Get-Command git -ErrorAction SilentlyContinue)",
+      "PowerShell(winget list --name \"Git\" 2>$null)"
     ]
   }
 }

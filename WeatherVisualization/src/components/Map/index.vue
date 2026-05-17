@@ -5,7 +5,6 @@ import {Scene, PointLayer, BaiduMap} from "@antv/l7";
 import { GaodeMap } from "@antv/l7-maps";
 import points_data from "@/assets/points_data.json";  // 这个点数据网上随机扒下来的
 import { useDataStore } from "@/stores";
-import WeatherInfoCard from "@/views/index/Map.vue";
 import BorderBox13 from "@/components/datav/border-box-13";
 
 const { setPointPosition, setCardShow } = useDataStore();

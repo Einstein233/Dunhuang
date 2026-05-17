@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { ElMessage } from "element-plus";
-import { column } from "element-plus/es/components/table-v2/src/common";
 import { defineProps, watch, ref } from "vue";
 import { WeatherInfo } from "@/api";
 
 import {useDataStore} from "@/stores";
-import { tr } from "element-plus/es/locale";
-import {data} from "autoprefixer";
 import axios from "axios";
 
 const DialogShow = ref(false);
