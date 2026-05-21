@@ -43,17 +43,15 @@ const climates = [
 
 const showInfo = ref(false);
 const currentRegion = ref({});
-const currentCity = ref("北京"); // 默认城市，避免初始化时出现undefined
-
-const handleCityChange = (city: string) => {
-  setTimeout(() => {
-      currentCity.value = city;
-    }, 400); // 延迟
-}
+const hoveredMapRegion = ref("");
 
 const emit = defineEmits(['showRegionPopup']);
 const showRegionPopup = (regionData: any) => {
   emit('showRegionPopup', regionData);
+};
+
+const handleMapHoverRegion = (regionName: string) => {
+  hoveredMapRegion.value = regionName || "";
 };
 
 </script>
@@ -64,15 +62,15 @@ const showRegionPopup = (regionData: any) => {
     <div class="top_area">
 
       <div class="contetn_left">
-        <ItemWrap class="contetn_left-top contetn_l-item" title="全国古文物分布">
+        <ItemWrap class="contetn_left-top contetn_l-item" title="城市气候排行总览">
           <LeftTop/>
         </ItemWrap>
         <ItemWrap
           class="contetn_left-bottom contetn_l-item"
-          :title="`${currentCity}`"
+          title="城市气候指标总览"
           style="padding: 0 -10px 16px 10px"
         >
-          <LeftBottom @city-change="handleCityChange"/>
+          <LeftBottom :hover-region="hoveredMapRegion"/>
         </ItemWrap>
       </div>
 
@@ -81,6 +79,7 @@ const showRegionPopup = (regionData: any) => {
           class="contetn_center_top" 
           title="多环境要素站点分布图" 
           @showRegionPopup="showRegionPopup" 
+          @hover-region-change="handleMapHoverRegion"
         />
           <!--      <Map @update="updateSelectedPoint" />-->
       </div>

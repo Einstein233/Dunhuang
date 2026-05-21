@@ -17,7 +17,8 @@ const code = ref("china");  // 初始为整张中国地图，若是点击省就�
 
 const emit = defineEmits([
   'update-father',
-  'showRegionPopup'
+  'showRegionPopup',
+  'hoverRegionChange'
 ]);
 
 // prop是property：组件对外暴露的参数接口。使用子组件时可以通过prop向它传递数据。
@@ -188,6 +189,19 @@ const mapDoubleClick = (params: any) => {
   emit("showRegionPopup", popupRegionData); 
 };
 
+const mapMouseOver = (params: any) => {
+  if (!params?.name) return;
+  emit("hoverRegionChange", params.name);
+};
+
+const mapGlobalOut = () => {
+  emit("hoverRegionChange", "");
+};
+
+const mapMouseOut = () => {
+  emit("hoverRegionChange", "");
+};
+
 </script>
 
 <template>
@@ -210,6 +224,9 @@ const mapDoubleClick = (params: any) => {
          ref="centerMapRef"
          @click="mapClick"  
          @dblclick="mapDoubleClick"  
+         @mouseover="mapMouseOver"
+         @mouseout="mapMouseOut"
+         @globalout="mapGlobalOut"
          v-if="JSON.stringify(option) != '{}'"
         />
         <div class="quanguo" @click="getData('china')" v-if="code !== 'china'">返 回</div>
