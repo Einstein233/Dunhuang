@@ -8,7 +8,6 @@ import { ElMessage } from "element-plus";
 
 import ScaleScreen from "@/components/scale-screen";
 import MessageContent from "@/components/Plugins/MessageContent";
-import ChatPanel from "@/components/ChatPanel.vue";
 import { useSettingStore } from "@/stores/index";
 
 import Headers from "./header.vue";
@@ -682,7 +681,6 @@ onMounted(() => {
   </scale-screen>
 
   <Setting />
-  <ChatPanel />
 </template>
 
 <style lang="scss" scoped>
