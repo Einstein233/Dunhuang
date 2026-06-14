@@ -8,6 +8,7 @@ import { ElMessage } from "element-plus";
 
 import ScaleScreen from "@/components/scale-screen";
 import MessageContent from "@/components/Plugins/MessageContent";
+import ChatPanel from "@/components/ChatPanel.vue";
 import { useSettingStore } from "@/stores/index";
 
 import Headers from "./header.vue";
@@ -60,6 +61,29 @@ type ExperimentResponseData = {
 
 const BACKEND_BASE_URL = "http://localhost:3000";
 const DEFAULT_EXPERIMENT_TYPE: ExperimentTypeOption["value"] = "rain_solar";
+
+/**
+ * 标准化地名：去掉行政后缀，用于前端字典名（如"兰州市""延边朝鲜族自治州"）
+ * 与数据库名（如"兰州""延边"）之间的匹配
+ */
+function normalizePlaceName(name: string): string {
+  if (!name) return "";
+  const suffixes = [
+    "壮族自治区", "回族自治区", "维吾尔自治区", "自治区", "特别行政区",
+    "藏族羌族自治州", "蒙古族藏族自治州", "傣族景颇族自治州", "傈僳族自治州",
+    "藏族自治州", "布依族苗族自治州", "苗族侗族自治州", "哈尼族彝族自治州",
+    "壮族苗族自治州", "彝族苗族自治州", "土家族苗族自治州", "朝鲜族自治州",
+    "蒙古自治州", "回族自治州", "傣族自治州", "白族自治州", "彝族自治州",
+    "哈萨克自治州", "柯尔克孜自治州", "黎族苗族自治县", "黎族自治县",
+    "土家族苗族自治州", "地区", "自治州", "省", "盟", "市",
+  ];
+  for (const suffix of suffixes) {
+    if (name.endsWith(suffix) && name.length > suffix.length) {
+      return name.slice(0, -suffix.length);
+    }
+  }
+  return name;
+}
 
 const settingStore = useSettingStore();
 const { isScale } = storeToRefs(settingStore);
@@ -116,8 +140,21 @@ const regionOptions = computed(() => {
     return availableRegions.value;
   }
 
+  // 预计算标准化后的候选集，避免重复计算
+  const normalizedCandidates = new Set<string>();
+  for (const c of candidates) {
+    normalizedCandidates.add(normalizePlaceName(c));
+  }
+
   return availableRegions.value.filter((item) => {
-    return candidates.has(item.city) || candidates.has(item.province);
+    if (candidates.has(item.city) || candidates.has(item.province)) {
+      return true;
+    }
+    // 标准化匹配：前端字典"兰州市" ↔ 数据库"兰州"
+    return (
+      normalizedCandidates.has(normalizePlaceName(item.city)) ||
+      normalizedCandidates.has(normalizePlaceName(item.province))
+    );
   });
 });
 
@@ -388,7 +425,13 @@ watch(
     }
 
     const matchedByMap = options.find((item) => {
-      return item.city === currentRegion.value.name || item.province === currentRegion.value.name;
+      const regionName = normalizePlaceName(currentRegion.value.name || "");
+      return (
+        item.city === currentRegion.value.name ||
+        item.province === currentRegion.value.name ||
+        normalizePlaceName(item.city) === regionName ||
+        normalizePlaceName(item.province) === regionName
+      );
     });
     selectedStationCode.value = (matchedByMap || options[0]).station_code;
   },
@@ -639,6 +682,7 @@ onMounted(() => {
   </scale-screen>
 
   <Setting />
+  <ChatPanel />
 </template>
 
 <style lang="scss" scoped>

@@ -82,7 +82,7 @@ docker exec dunhuang-mysql-prod mysql -uroot -proot --default-character-set=utf8
 "
 ```
 
-预期结果：14 张表，`weather_data` ~236,304 行，`station_info` 391 行。
+预期结果：14 张表，`weather_data` ~15,004,296 行，`station_info` 395 行，`weather_directory` 339 行。
 
 ---
 
@@ -146,7 +146,7 @@ docker exec dunhuang-mysql-prod mysql -uroot -proot --default-character-set=utf8
 | `longitude` | decimal(11,8) | 经度 |
 | `granularity` | tinyint | 采集颗粒度（2=小时） |
 
-**数据量**：391 行，覆盖全国所有省市 + 港澳台。
+**数据量**：395 行，覆盖全国所有省市 + 港澳台。其中 339 个站点有气象数据，56 个站点暂无数据（重庆区县、海南区县、台湾、香港、澳门）。
 
 #### `weather_directory` — 数据目录索引
 
@@ -161,7 +161,7 @@ docker exec dunhuang-mysql-prod mysql -uroot -proot --default-character-set=utf8
 | `end_time` | datetime | 数据结束时间 |
 | `total_count` | int | 数据总条数 |
 
-**数据量**：3 行 —— 天津(2014-2026, 107,976条)、北京(2024-2026, 20,352条)、敦煌(2014-2026, 107,976条)。
+**数据量**：339 行 —— 天津(2014-2026, 107,976条)、北京(2020-2026, 55,416条)、敦煌(2014-2026, 107,976条) 以及全国 336 个城市（2020-2024, 每城 43,848条）。
 
 作用：在查询数据前快速判断一个站点有哪些时间段的数据可用。
 
@@ -179,7 +179,16 @@ docker exec dunhuang-mysql-prod mysql -uroot -proot --default-character-set=utf8
 | `max_continuous_wind_speed` | decimal(6,2) | 最大持续风速（m/s） |
 | `shortwave_radiation_sum` | decimal(8,2) | 短波辐射累计（MJ/m²） |
 
-**数据量**：236,304 行，覆盖天津/北京/敦煌的逐小时数据。
+**数据量**：15,004,296 行，覆盖 339 个城市的逐小时数据。
+
+| 数据来源 | 站点数 | 时间范围 | 每站行数 | 说明 |
+|----------|--------|----------|----------|------|
+| Open-Meteo 历史 API | 336 个城市 | 2020-01-01 ~ 2024-12-31 | 43,848 | 全国城市级小时数据（通过 `import_openmeteo_batch.js` 导入） |
+| Open-Meteo 历史 API | 天津(ST000002) | 2014-01-01 ~ 2026-04-26 | 107,976 | 原始历史数据 |
+| Open-Meteo 历史 API | 敦煌(ST000004) | 2014-01-01 ~ 2026-04-26 | 107,976 | 原始历史数据 |
+| Open-Meteo 历史 API | 北京(ST000003) | 2020-01-01 ~ 2026-04-27 | 55,416 | 历史 + 近期更新 |
+
+**注意**：数据来源于 Open-Meteo 的 ERA5 再分析数据，非实际气象站观测值，适用于趋势分析。
 
 ---
 
@@ -194,4 +203,39 @@ station_info (站点元数据)
     │
     └──> 系统管理表 (user / roles / router_menu ...)
           （通过 back_con 应用层关联，无外键约束）
+```
+
+---
+
+## 三、数据导入工具
+
+### 批量导入 Open-Meteo 数据
+
+```bash
+# 一键导入（自动定位 weather_data/output_weather/output_weather/ 目录）
+node services/mysql/scripts/import_openmeteo_batch.js
+
+# 预览模式（不写入数据库，仅检查文件映射）
+node services/mysql/scripts/import_openmeteo_batch.js --dry-run
+
+# 测试导入前 N 个文件
+node services/mysql/scripts/import_openmeteo_batch.js --limit 5
+
+# 自定义数据目录
+node services/mysql/scripts/import_openmeteo_batch.js /path/to/csv/folder
+```
+
+**脚本功能**：
+- 自动解析 CSV 中的省市名和经纬度
+- 省市名标准化（"甘肃省"→"甘肃"、"上海市"→"上海"）
+- 自动匹配或创建 station_code（站点编码）
+- 降雪量单位转换（cm → mm）
+- 批量写入 + 目录索引同步
+- 幂等操作（重复运行自动覆盖，不会重复）
+
+### 单文件导入
+
+```bash
+node services/mysql/scripts/import_weather_observation_hourly.js <csvPath> <regionName> \
+  --province <province> --city <city> --latitude <lat> --longitude <lon>
 ```
