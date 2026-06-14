@@ -11,13 +11,11 @@ import { getRegionNameByAdcode } from "@/mock/mock-index"
 import type { MapdataType } from "./center.map";
 import Map from "@/components/Map/index.vue";
 
-
 const option = ref({});   // 创建一个响应式的空对象，用来存放Echarts的图表配置
 const code = ref("china");  // 初始为整张中国地图，若是点击省就会变成该省编码
 
 const emit = defineEmits([
   'update-father',
-  'showRegionPopup',
   'hoverRegionChange'
 ]);
 
@@ -32,7 +30,6 @@ withDefaults(
     title: "地图",  // 如果没有传入title，默认为"地图"
   }
 );
-
 
 // 异步函数：接收两个参数 regioncode（地图区域的编码）和 list（name和value的数据列表，如地区名+数据值） 
 // 根据区域代码获取该区域的 GeoJSON 行政边界数据，提取每个区块的中心点（坐标），然后将传入的业务数据绑定上坐标，输出成 mapData 数组供 ECharts 等图表使用。
@@ -64,7 +61,6 @@ const dataSetHandle = async (regionCode: string, list: object[]) => {
   option.value = optionHandle(regionCode, list, mapData);
 };
 
-
 // 前端地图点击交互后拉取数据并刷新图表
 const getData = async (regionCode: string) => {
   // 如果 regionCode 是 chinaNanhai，设置为海南省的 460000
@@ -91,7 +87,6 @@ const getData = async (regionCode: string) => {
     });
 };
 
-
 // 加载地图GeoJSON数据
 const getGeojson = (regionCode: string) => {
   return new Promise<boolean>(async (resolve) => {
@@ -116,7 +111,6 @@ const getGeojson = (regionCode: string) => {
   });
 };
 
-
 getData(code.value);    // 用于初始化中国地图，世界地图用onmounted
 
 let clickTimer: any = null;  // 设置一个计时器来区分双击和单击事件，避免冲突触发
@@ -131,11 +125,7 @@ const mapClick = (params: any) => {
   }
 
   clickTimer = setTimeout(() => {
-    console.log("单击params = ", params);
-
-    // 看看用户点击的区域有没有对应的编码数据
-    let xzqData = regionCodes[params.name];
-    console.log("beloo", xzqData)
+    let xzqData = regionCodes[params.name]
     
     if (!xzqData) {
       window["$message"].warning("暂无下级城市");
@@ -152,41 +142,6 @@ const mapClick = (params: any) => {
       return;
     }
   }, 250);  // 等一下，确认是否是双击事件，否则为单击事件  
-};
-
-// 新增：双击逻辑（跳出模拟实验的交互弹窗）
-const mapDoubleClick = (params: any) => {
-  if (clickTimer) {
-    clearTimeout(clickTimer);
-    clickTimer = null;
-  }
-
-  console.log("双击 params = ", params);
-  
-  const baseRegionData = regionCodes[params.name];
-  console.log("双击 regionData = ", baseRegionData);
-
-  if (!baseRegionData) {
-    window["$message"].warning("暂无区域信息");
-    return;
-  }
-
-  // 用 adcode 去补全 climate / province / level 等信息
-  const paramInfo = getRegionNameByAdcode(baseRegionData.adcode);
-  if (!paramInfo || !paramInfo.climate) {
-    window["$message"].warning("暂无气候片区信息");
-    return;
-  }
-
-  const popupRegionData = {
-    ...baseRegionData,
-    ...paramInfo, 
-    area: "center_map",  // 分辨嗲用弹窗的来源地区是bottom或center
-  };
-
-  console.log("双击最终传递的数据 = ", popupRegionData);
-
-  emit("showRegionPopup", popupRegionData); 
 };
 
 const mapMouseOver = (params: any) => {
@@ -223,7 +178,7 @@ const mapMouseOut = () => {
          :option="option"
          ref="centerMapRef"
          @click="mapClick"  
-         @dblclick="mapDoubleClick"  
+        
          @mouseover="mapMouseOver"
          @mouseout="mapMouseOut"
          @globalout="mapGlobalOut"
