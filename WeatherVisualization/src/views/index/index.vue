@@ -45,6 +45,11 @@ const showInfo = ref(false);
 const currentRegion = ref({});
 const hoveredMapRegion = ref("");
 
+const emit = defineEmits(['showRegionPopup']);
+const showRegionPopup = (regionData: any) => {
+  emit('showRegionPopup', regionData);
+};
+
 const handleMapHoverRegion = (regionName: string) => {
   hoveredMapRegion.value = regionName || "";
 };
@@ -73,7 +78,7 @@ const handleMapHoverRegion = (regionName: string) => {
         <CenterMap 
           class="contetn_center_top" 
           title="多环境要素站点分布图" 
-          
+          @showRegionPopup="showRegionPopup" 
           @hover-region-change="handleMapHoverRegion"
         />
           <!--      <Map @update="updateSelectedPoint" />-->
@@ -90,22 +95,22 @@ const handleMapHoverRegion = (regionName: string) => {
     <!-- 子组件ClimateMap发射showregion事件，这里调用showregionpopup接收传来的参数 -->
     <div class="bottom_area">
       <ItemWrap class="bottom-item" title="热带季风片区">
-        <ClimateMap :climateID="climates[0].title" @show-region="() => {}"/>
+        <ClimateMap :climateID="climates[0].title" @show-region="showRegionPopup"/>
       </ItemWrap>
       <ItemWrap class="bottom-item" title="亚热带季风片区">
-        <ClimateMap :climateID="climates[1].title" @show-region="() => {}"/>
+        <ClimateMap :climateID="climates[1].title" @show-region="showRegionPopup"/>
       </ItemWrap>
       <ItemWrap class="bottom-item" title="高原山地片区">
-        <ClimateMap :climateID="climates[2].title" @show-region="() => {}"/>
+        <ClimateMap :climateID="climates[2].title" @show-region="showRegionPopup"/>
       </ItemWrap>
       <ItemWrap class="bottom-item" title="温带大陆性片区">
-        <ClimateMap :climateID="climates[3].title" @show-region="() => {}"/>
+        <ClimateMap :climateID="climates[3].title" @show-region="showRegionPopup"/>
       </ItemWrap>
       <ItemWrap class="bottom-item" title="温带季风片区">
-        <ClimateMap :climateID="climates[4].title" @show-region="() => {}"/>
+        <ClimateMap :climateID="climates[4].title" @show-region="showRegionPopup"/>
       </ItemWrap>
       <ItemWrap class="bottom-item" title="热带雨林片区">
-        <ClimateMap :climateID="climates[5].title" @show-region="() => {}"/>
+        <ClimateMap :climateID="climates[5].title" @show-region="showRegionPopup"/>
       </ItemWrap>
     </div>
 
