@@ -30,18 +30,11 @@ const currentRanking = computed(() => {
   if (!metric) return [];
 
   const rows = rankings.value[metric.key] || [];
-  const placeholders: RankingItem[] = [
-    { rank: 4, province: "陕西", city: "西安", stationCode: "placeholder-4", value: 0, unit: metric.unit },
-    { rank: 5, province: "河南", city: "洛阳", stationCode: "placeholder-5", value: 0, unit: metric.unit },
-  ];
-
-  return [...rows, ...placeholders]
-    .slice(0, 5)
-    .map((item, index) => ({
-      ...item,
-      rank: index + 1,
-      unit: metric.unit,
-    }));
+  return rows.slice(0, 5).map((item, index) => ({
+    ...item,
+    rank: index + 1,
+    unit: metric.unit,
+  }));
 });
 
 const maxValue = computed(() => {
