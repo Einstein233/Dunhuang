@@ -103,6 +103,7 @@ async function startAll() {
   log(colors.title, "Starting all services...");
   log(colors.title, "========================================");
 
+  // Step 1: Start Docker services
   const dockerUpCode = await runShortCommand(
     dockerConfig.name,
     dockerConfig.cwd,
@@ -116,15 +117,28 @@ async function startAll() {
     process.exit(1);
   }
 
+  // Step 2: Wait briefly for Docker containers to be ready
+  log(colors.title, "[start-all] Waiting for Docker services to be ready...");
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+
+  // Step 3: Start Node services
   nodeServices.forEach(spawnLongRunning);
 
   log(colors.title, "");
   log(colors.title, "All services started.");
-  log(colors.title, "front_con:             http://127.0.0.1:2023");
-  log(colors.title, "back_con:              http://127.0.0.1:3000");
-  log(colors.title, "sql-agent ui/api:      http://127.0.0.1:3001");
-  log(colors.title, "equivalence-service:   http://127.0.0.1:8000");
-  log(colors.title, "mysql (docker):        127.0.0.1:3308");
+  log(colors.title, "");
+  log(colors.title, "  Docker services:");
+  log(colors.title, "    mysql (docker):        127.0.0.1:3308");
+  log(colors.title, "    sql-agent ui/api:      http://127.0.0.1:3001");
+  log(colors.title, "    equivalence-service:   http://127.0.0.1:8000");
+  log(colors.title, "    mcp-tools (MCP):       http://127.0.0.1:3100");
+  log(colors.title, "    sql-agent-v2 (V2):     http://127.0.0.1:3002");
+  log(colors.title, "");
+  log(colors.title, "  Node services:");
+  log(colors.title, "    WeatherVisualization:  http://127.0.0.1:5173");
+  log(colors.title, "    front_con (admin):     http://127.0.0.1:2023");
+  log(colors.title, "    back_con (API):        http://127.0.0.1:3000");
+  log(colors.title, "");
   log(colors.title, "Press Ctrl+C to stop all services.");
   log(colors.title, "");
 }
