@@ -85,7 +85,7 @@ const handleMapHoverRegion = (regionName: string) => {
       </div>
 
       <div class="contetn_right">
-        <ItemWrap class="contetn_left-bottom contetn_r-item" title="智能问答">
+        <ItemWrap class="contetn_left-bottom contetn_r-item" title="智能气候专家">
           <RightWhole/>
         </ItemWrap>
       </div>

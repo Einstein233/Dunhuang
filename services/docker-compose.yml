@@ -77,5 +77,20 @@ services:
       - mcp-tools
     restart: unless-stopped
 
+  rag-agent:
+    build:
+      context: ./rag-agent
+      dockerfile: Dockerfile
+    container_name: dunhuang-rag-agent
+    env_file:
+      - ./rag-agent/.env
+    ports:
+      - "3003:8000"
+    volumes:
+      - ./rag-agent/knowledge:/app/knowledge:ro
+      - rag_chroma_data:/app/chroma_data
+    restart: unless-stopped
+
 volumes:
   dh_mysql_data:
+  rag_chroma_data:

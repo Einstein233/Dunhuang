@@ -133,6 +133,7 @@ async function startAll() {
   log(colors.title, "    equivalence-service:   http://127.0.0.1:8000");
   log(colors.title, "    mcp-tools (MCP):       http://127.0.0.1:3100");
   log(colors.title, "    sql-agent-v2 (V2):     http://127.0.0.1:3002");
+  log(colors.title, "    rag-agent (RAG):       http://127.0.0.1:3003");
   log(colors.title, "");
   log(colors.title, "  Node services:");
   log(colors.title, "    WeatherVisualization:  http://127.0.0.1:5173");
